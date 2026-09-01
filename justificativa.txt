@@ -5,3 +5,5 @@ Justificativa da escolha do tema: Explicação do porquê a dupla escolheu este 
 Visão de expansão futura: Descrição de como a dupla imagina que a planta industrial poderá ser expandida nos próximos laboratórios (novos equipamentos, novas etapas de produção, novos produtos, automação adicional, etc.).
 
 O arquivo deve ser escrito de forma clara e demonstrar reflexão genuína sobre o projeto, não apenas cumprir um requisito formal.
+
+teste
