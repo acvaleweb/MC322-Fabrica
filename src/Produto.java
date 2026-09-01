@@ -4,7 +4,7 @@ public class Produto {
     private StatusProduto status;
     private double quantidadeMateriaPrimaNecessaria;
 
-    public Produto(String id, String nome, Double quantidadeMateriaPrimaNecessaria) {
+    public Produto(String id, String nome, double quantidadeMateriaPrimaNecessaria) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;
@@ -16,7 +16,11 @@ public class Produto {
     }
 
     public void definirDemandaMateriaPrima(double quantidade) {
-
+        if (quantidade > 0) {
+            this.quantidadeMateriaPrimaNecessaria = quantidade;
+        } else {
+            System.out.println("Erro: A quantidade deve ser maior que zero.");
+        }
     }
 
     public double getDemandaMateriaPrima() {
