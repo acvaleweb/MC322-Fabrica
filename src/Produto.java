@@ -15,12 +15,13 @@ public class Produto {
         status = StatusProduto.PROCESSADO;
     }
 
-    public void definirDemandaMateriaPrima(double quantidade) {
+    public boolean definirDemandaMateriaPrima(double quantidade) {
         if (quantidade > 0) {
             this.quantidadeMateriaPrimaNecessaria = quantidade;
-        } else {
-            System.out.println("Erro: A quantidade deve ser maior que zero.");
+            return true;
         }
+
+        return false;
     }
 
     public double getDemandaMateriaPrima() {
