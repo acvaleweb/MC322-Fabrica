@@ -1,12 +1,9 @@
-A dupla deve criar um arquivo de texto chamado justificativa.txt contendo:
+Escolhemos fazer uma fábrica de placas de vídeo pois são equipamentos complexos em design. O mapeamento completo do processo produtivo seria extenso, o que confere espaço para a expansão do projeto. Ademais, é uma oportunidade para aprofundar o conhecimento a respeito deste componente que se tornou importante no contexto da economia global. Placas de vídeo são utilizadas para processamento paralelo, e a natureza matricial de modelos convolucionais e transformer a fazem o processador perfeito para a tarefa. Nos últimos 10 anos, os avanços acadêmicos em Machine Learning, bem como o crescente interesse da indústria, convergiram para a atual frenesi de desenvolvimento (treinamento) e uso (inferência) de grandes modelos transformers de linguagem, processos que requerem processamento paralelo. A NVIDIA, originalmente uma fabricante de Graphial Processing Units (GPUs), ao longo de sua história passou a vender também placas de vídeo, e mais tarde, ecossistemas compostos por licensas de software e GPUs de Tensor Core para datacenters. Hoje, é a empresa com o maior valor de mercado no mundo, e isso ilustra a importância que esse componente tomou.
 
-Justificativa da escolha do tema: Explicação do porquê a dupla escolheu este tipo 
-específico de fábrica (interesse pessoal, familiaridade com o tema, relevância social,
-potencial de expansão, etc.);
+O primeiro produto de nossa fábrica é a placa de vídeo, tendo como insumo a GPU. Nas próximas etapas, incluiremos mais insumos necessários, como solda, placa de circuito impresso, capacitores, RAM, portas, resistores, transistores, conectores, ventoinhas, heatsinks, thermal pads, pasta térmica, componentes metálicos, parafusos, componentes plásticos. Detalharemos as etapas de produção da placa, criando elementos parciais que se combinarão até chegar ao produto final. 
 
-Visão de expansão futura: Descrição de como a dupla imagina que a planta industrial poderá
-ser expandida nos próximos laboratórios (novos equipamentos, novas etapas de produção,
-novos produtos, automação adicional, etc.).
+Será possível também detalhar o processo de manufatura de outros produtos tangentes, como placas para servidores (aceleradores de AI) e ASICs, e também criar diferentes modelos destas categorias de produtos. Cada um deles terá diferenças de design. GPUs para servidores, por exemplo, podem não ter coolers e serem projetadas para a compatibilidade com sistemas de arrefecimento do servidor, seja estes de refrigeração líquida ou a ar.
 
-O arquivo deve ser escrito de forma clara e demonstrar reflexão genuína
-sobre o projeto, não apenas cumprir um requisito formal.
+Outra via de desenvolvimento é o detalhamento do processo de manufatura de alguns dos itens previamente tidos como matérias-primas. Por exemplo, a GPU (chip) - areia -> ingotes de silício -> wafers -> processo de fotolitografia para engravar circuito -> processo químico, ou os coolers, feitos de bobinas de cobre, peças plásticas e peças móveis.
+
+A inclusão dos elementos parciais é o que ditará o detalhamento dos equipamentos e processos necessários para os manufaturar. A ideia é que o processo seja muito parecido com a dinâmica em uma fábrica, para que seja possível imaginar a utilidade deste software de gestão da produção em um contexto real.
