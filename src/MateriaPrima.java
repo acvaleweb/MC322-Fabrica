@@ -30,6 +30,7 @@ public class MateriaPrima {
         return true;
     }
 
+
     public boolean atendeLoteMinimo(double quantidadeDemandada) {
         return quantidadeDemandada >= this.quantidadeMinima;
     }
