@@ -2,13 +2,13 @@ public class Produto {
     private String id;
     private String nome;
     private StatusProduto status;
-    private double quantidadeMateriaPrimaNecessaria;
+    private double demandaMateriaPrima;
 
     public Produto(String id, String nome, double quantidadeMateriaPrimaNecessaria) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;
-        this.quantidadeMateriaPrimaNecessaria = quantidadeMateriaPrimaNecessaria;
+        this.demandaMateriaPrima = quantidadeMateriaPrimaNecessaria;
     }
 
     public void processar() {
@@ -17,7 +17,7 @@ public class Produto {
 
     public boolean definirDemandaMateriaPrima(double quantidade) {
         if (quantidade > 0) {
-            this.quantidadeMateriaPrimaNecessaria = quantidade;
+            this.demandaMateriaPrima = quantidade;
             return true;
         }
 
@@ -25,7 +25,7 @@ public class Produto {
     }
 
     public double getDemandaMateriaPrima() {
-        return quantidadeMateriaPrimaNecessaria;
+        return demandaMateriaPrima;
     }
 
     public String getId() {
@@ -38,6 +38,10 @@ public class Produto {
 
     public StatusProduto getStatus() {
         return status;
+    }
+
+    public void setStatus(StatusProduto status) {
+        this.status = status;
     }
 
 }
