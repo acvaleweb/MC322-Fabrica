@@ -5,7 +5,7 @@ public class Produto {
     private double demandaMateriaPrima;
     private double massa;	// em kg	
 
-    public Produto(String id, String nome, double demandaMateriaPrima) {
+    public Produto(String id, String nome, double demandaMateriaPrima, double massa) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;

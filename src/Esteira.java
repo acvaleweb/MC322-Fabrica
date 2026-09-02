@@ -6,10 +6,10 @@ public class Esteira {
 	private boolean temItem;	
 	
 	public Esteira(String item, boolean emMovimento, double capacidadeMaxima, boolean temItem) {
-		this.item = item;
-		this.emMovimento = emMovimento;
 		this.capacidadeMaxima = capacidadeMaxima;
-		this.temItem = temItem;
+		this.item = "";
+		this.emMovimento = false;
+		this.temItem = false;
 	}
 
 	public void ligar() {

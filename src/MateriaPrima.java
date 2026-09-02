@@ -7,7 +7,7 @@ public class MateriaPrima {
     private double densidade;	     // massa de uma unidade 
         
     
-    public MateriaPrima(String id, String nome, double quantidade, String unidade, double quantidadeMinima) {
+    public MateriaPrima(String id, String nome, double quantidade, String unidade, double quantidadeMinima, double densidade) {
 	this.id = id;
 	this.nome = nome;
 	this.quantidade = quantidade;
@@ -23,8 +23,11 @@ public class MateriaPrima {
     }
 
     public void adicionarEstoque(double quantidadeAdiciona) {
-		quantidade = quantidade + quantidadeAdiciona;
-	}
+	    if(quantidadeAdiciona >= quantidadeMinima) {
+		    quantidade = quantidade + quantidadeAdiciona;
+	    }
+	
+    }
 
     // método verificarDisponibilidade - verifica se há qtd para uma demanda
     public boolean verificarDisponibilidade(int quantidadeProdutoFinal, Produto produto) {
