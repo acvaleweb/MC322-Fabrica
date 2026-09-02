@@ -4,11 +4,11 @@ public class Produto {
     private StatusProduto status;
     private double demandaMateriaPrima;
 
-    public Produto(String id, String nome, double quantidadeMateriaPrimaNecessaria) {
+    public Produto(String id, String nome, double demandaMateriaPrima) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;
-        this.demandaMateriaPrima = quantidadeMateriaPrimaNecessaria;
+        this.demandaMateriaPrima = demandaMateriaPrima;
     }
 
     public void processar() {
