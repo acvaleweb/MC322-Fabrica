@@ -1,4 +1,8 @@
+1. Justificativa da escolha do tema
+
 Escolhemos fazer uma fábrica de placas de vídeo pois são equipamentos complexos em design. O mapeamento completo do processo produtivo seria extenso, o que confere espaço para a expansão do projeto. Ademais, é uma oportunidade para aprofundar o conhecimento a respeito deste componente que se tornou importante no contexto da economia global. GPUs são utilizadas para processamento paralelo, e a natureza matricial de modelos convolucionais e transformers faz delas um tipo de processador particularmente adequado para a tarefa. Nos últimos 10 anos, os avanços acadêmicos em Machine Learning, bem como o crescente interesse da indústria, convergiram para o atual frenesi de desenvolvimento (treinamento) e uso (inferência) de grandes modelos transformers de linguagem, processos que requerem processamento paralelo. Por último, a escolha foi motivada também por nosso interesse em hardware e computação.
+
+2. Visão de expansão futura
 
 O primeiro produto de nossa fábrica é a placa de vídeo, tendo como insumo a GPU (chip). Nas próximas etapas, incluiremos mais insumos necessários, como solda, placa de circuito impresso, capacitores, VRAM, portas, resistores, transistores, conectores, ventoinhas, heatsinks, thermal pads, pasta térmica, componentes metálicos, parafusos, componentes plásticos. Detalharemos as etapas de produção da placa, criando elementos parciais que se combinarão até chegar ao produto final. 
 
