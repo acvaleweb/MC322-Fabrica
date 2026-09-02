@@ -3,12 +3,14 @@ public class Produto {
     private String nome;
     private StatusProduto status;
     private double demandaMateriaPrima;
+    private double massa;	// em kg	
 
     public Produto(String id, String nome, double demandaMateriaPrima) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;
         this.demandaMateriaPrima = demandaMateriaPrima;
+	this.massa = massa;
     }
 
     public void processar() {
@@ -35,6 +37,10 @@ public class Produto {
     public String getNome() {
         return nome;
     }
+    
+    public double getMassa() {
+	    return massa;
+    }
 
     public StatusProduto getStatus() {
         return status;
@@ -45,3 +51,5 @@ public class Produto {
     }
 
 }
+
+
