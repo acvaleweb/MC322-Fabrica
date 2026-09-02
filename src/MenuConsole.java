@@ -25,7 +25,7 @@ public class MenuConsole {
     private void exibirIntroducao() {
 
         System.out.println("==================================================");
-        System.out.println("              FÁBRICA DE HARDWARE      ");
+        System.out.println("                FÁBRICA DE HARDWARE               ");
         System.out.println("==================================================");
         System.out.println("Bem-vindos à nossa planta industrial automatizada!");
         System.out.println("==================================================\n");
@@ -33,9 +33,45 @@ public class MenuConsole {
         System.out.println("1. Consultar estoque");
         System.out.println("2. Comprar matéria-prima");
         System.out.println("3. Fabricar produtos");
+        System.out.println("0. Fechar programa");
     
     }
 
+    private void exibirInventario() {
+
+        System.out.println("==================================================");
+        System.out.println("                    INVENTÁRIO                    ");
+        System.out.println("==================================================");
+        System.out.println("==================================================\n");
+        
+        System.out.println("Produtos em estoque:");
+        System.out.println("- " + placaVideo1.getNome());
+        System.out.println("Status: " + placaVideo1.getStatus());
+        
+        System.out.println("Matérias-Primas em estoque:");
+        System.out.println("- " + gpu1.getNome());
+        System.out.println("Quantidade: " + gpu1.getQuantidade());
+
+        System.out.println("Digite 0 para voltar.");
+    }
+
+    private void exibirMenuCompra() {
+        
+        System.out.println("==================================================");
+        System.out.println("              COMPRAR MATÉRIA-PRIMA               ");
+        System.out.println("==================================================");
+        System.out.println("==================================================\n");
+
+    }
+
+    private void exibirMenuFabricar() {
+
+        System.out.println("==================================================");
+        System.out.println("                    FABRICAR                      ");
+        System.out.println("==================================================");
+        System.out.println("==================================================\n");
+
+    }
 
     public String lerEntrada() {
         System.out.print("Escolha uma opção: ");
@@ -49,13 +85,16 @@ public class MenuConsole {
         
         switch (lerEntrada()) {
             case "1":
-                // consultar estoque
+                exibirInventario();
+                if (lerEntrada()=="0") {exibirIntroducao();}
                 break;
             case "2":
-                // comprar matéria-prima
+                exibirMenuCompra();
+                if (lerEntrada()=="0") {exibirIntroducao();}
                 break;
             case "3":
-                // fabricar produtos
+                exibirMenuFabricar();
+                if (lerEntrada()=="0") {exibirIntroducao();}
                 break;
             default:
             System.out.println("Opção inválida.");
