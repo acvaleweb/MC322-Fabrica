@@ -44,7 +44,7 @@ public class MenuConsole {
         System.out.println("==================================================");
         System.out.println("==================================================\n");
         
-        System.out.println("Produtos em estoque:");
+        System.out.println("Produtos:");
         System.out.println("- " + placaVideo1.getNome());
         System.out.println("Status: " + placaVideo1.getStatus());
         
@@ -62,6 +62,15 @@ public class MenuConsole {
         System.out.println("==================================================");
         System.out.println("==================================================\n");
 
+        System.out.println("Em estoque:");
+        System.out.println("- " + gpu1.getNome());
+        System.out.println("Quantidade em estoque: " + gpu1.getQuantidade());
+        System.out.println("Quantidade mínima para compra: " + gpu1.getQuantidadeMinima());
+
+        System.out.println("O que você deseja fazer?");
+        System.out.println("1. Comprar " + gpu1.getNome());
+        System.out.println("0. Voltar");
+
     }
 
     private void exibirMenuFabricar() {
@@ -70,6 +79,15 @@ public class MenuConsole {
         System.out.println("                    FABRICAR                      ");
         System.out.println("==================================================");
         System.out.println("==================================================\n");
+
+        System.out.println("Produtos:");
+        System.out.println("- " + placaVideo1.getNome());
+        System.out.println("Status: " + placaVideo1.getStatus());
+
+        System.out.println("O que você deseja fazer?");
+        System.out.println("1. Fabricar " + gpu1.getNome());
+        System.out.println("0. Voltar");
+
 
     }
 
@@ -88,14 +106,36 @@ public class MenuConsole {
                 exibirInventario();
                 if (lerEntrada().equals("0")) {exibirIntroducao();}
                 break;
+
             case "2":
                 exibirMenuCompra();
-                if (lerEntrada().equals("0")) {exibirIntroducao();}
+                switch (lerEntrada()) {
+                    case "1":
+                    // logica de compra
+                        break;
+                    case "0":
+                        exibirIntroducao();
+                        break;
+                    default:
+                        System.out.println("Opção inválida.");
+            }
+
                 break;
+
             case "3":
                 exibirMenuFabricar();
-                if (lerEntrada().equals("0")) {exibirIntroducao();}
-                break;
+                switch (lerEntrada()) {
+                    case "1":
+                    // logica de producao
+                        break;
+                    case "0":
+                        exibirIntroducao();
+                        break;
+                    default:
+                        System.out.println("Opção inválida.");
+            }
+            break;
+
             case "0":
                 System.exit(0);
                 break;
