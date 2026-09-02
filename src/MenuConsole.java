@@ -86,16 +86,20 @@ public class MenuConsole {
         switch (lerEntrada()) {
             case "1":
                 exibirInventario();
-                if (lerEntrada()=="0") {exibirIntroducao();}
+                if (lerEntrada().equals("0")) {exibirIntroducao();}
                 break;
             case "2":
                 exibirMenuCompra();
-                if (lerEntrada()=="0") {exibirIntroducao();}
+                if (lerEntrada().equals("0")) {exibirIntroducao();}
                 break;
             case "3":
                 exibirMenuFabricar();
-                if (lerEntrada()=="0") {exibirIntroducao();}
+                if (lerEntrada().equals("0")) {exibirIntroducao();}
                 break;
+            case "0":
+                System.exit(0);
+                break;
+
             default:
             System.out.println("Opção inválida.");
         }
