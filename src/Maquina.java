@@ -17,8 +17,25 @@ public class Maquina {
         ligada = false;
     }
 
-    public void processar(MateriaPrima materiaPrima, double demanda) {
-        // irei fazer
+    public boolean processar(MateriaPrima materiaPrima, Produto produto) {
+        if (!this.ligada || materiaPrima == null || produto == null) {
+            return false;
+        }
+
+        double demanda = produto.getDemandaMateriaPrima();
+
+        if (demanda > this.capacidadeMaxima) {
+            return false;
+        }
+
+        boolean conseguiuConsumir = materiaPrima.consumir(demanda);
+
+        if (!conseguiuConsumir) {
+            return false;
+        }
+
+        produto.processar();
+        return true;
     }
 
     public String getNome() {

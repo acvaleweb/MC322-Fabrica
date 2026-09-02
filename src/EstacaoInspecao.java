@@ -1,5 +1,4 @@
 public class EstacaoInspecao {
-
     private boolean ativa;
     private int produtosInspecionados;
 
@@ -17,7 +16,7 @@ public class EstacaoInspecao {
     }
 
     public boolean inspecionar(Produto produto) {
-        if (!this.ativa || produto == null) {
+        if (!this.ativa || produto == null || produto.getStatus() != StatusProduto.PROCESSADO) {
             return false;
         }
 
