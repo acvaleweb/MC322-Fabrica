@@ -18,6 +18,14 @@ public class MenuConsole {
         est1 = new EstacaoInspecao();
     }
 
+    private void pausar(long ms) {
+    try {
+        Thread.sleep(ms);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}
+
     private void exibirIntroducao() {
         System.out.println("==================================================");
         System.out.println("                FÁBRICA DE HARDWARE               ");
@@ -155,7 +163,61 @@ public class MenuConsole {
 
         switch (lerEntrada()) {
             case "1":
-                // logica de producao
+                System.out.println("Checando estoque de "+gpu1.getNome()+": "+gpu1.getQuantidade());
+                if (gpu1.getQuantidade()<placaVideo1.getDemandaMateriaPrima()) {
+                    System.out.println("Estoque insuficiente. Cancelando manufatura.");
+                    break;
+                }
+                pausar(100);
+                System.out.println("Estoque suficiente. Diminuindo estoque de "+gpu1.getNome()+" em "+placaVideo1.getDemandaMateriaPrima()+" e iniciando manufatura.");
+                gpu1.consumir(placaVideo1.getDemandaMateriaPrima());
+                pausar(100);
+
+                System.out.println("Checando estado da esteira");
+                pausar(100);
+                if (esteira1.estaEmMovimento()) {
+                    System.out.println("Esteira em movimento. Desligando...");
+                    esteira1.desligar();
+                    pausar(100);
+
+                }
+                System.out.println("Ligando esteira...");
+                esteira1.ligar();
+                pausar(100);
+                System.out.println(gpu1.getNome()+" colocado na esteira");
+                pausar(100);
+                System.out.println(gpu1.getNome()+" chegou na "+SMT.getNome()+". Desligando esteira...");
+                pausar(100);
+                esteira1.desligar();
+                System.out.println("Checando estado da "+SMT.getNome());
+                pausar(100);
+                if (SMT.estaLigada()) {
+                    System.out.println(SMT.getNome()+" ligada. Desligando...");
+                    SMT.desligar();
+                    pausar(100);
+                }
+                System.out.println("Inserindo "+gpu1.getNome()+" em"+SMT.getNome()+"...");
+                pausar(100);
+                SMT.ligar();
+                System.out.println("Ligando "+SMT.getNome()+"...");
+                pausar(100);
+                System.out.println("Realizando manufatura...");
+                placaVideo1.processar();
+                System.out.println(placaVideo1.getNome()+" "+placaVideo1.getStatus()+".");
+                pausar(100);
+                System.out.println("Concluído. Desligando "+SMT.getNome()+" e Iniciando processo de inspeção.");
+                SMT.desligar();
+                pausar(100);;
+                System.out.println("Ativando estação...");
+                est1.ativar();
+                pausar(100);
+                System.out.println("Realizando inspeção...");
+                est1.inspecionar(placaVideo1);
+                pausar(100);
+                System.out.println("Inspeção Realizada. Desativando estação...");
+                est1.desativar();
+                pausar(100);
+                System.out.println("Estação desativada. Processo concluído e "+placaVideo1.getNome()+" manufaturado.");
                 break;
             case "0":
                 return;
