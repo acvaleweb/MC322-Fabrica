@@ -196,7 +196,7 @@ public class MenuConsole {
                     SMT.desligar();
                     pausar(100);
                 }
-                System.out.println("Inserindo "+gpu1.getNome()+" em"+SMT.getNome()+"...");
+                System.out.println("Inserindo "+gpu1.getNome()+" em "+SMT.getNome()+"...");
                 pausar(100);
                 SMT.ligar();
                 System.out.println("Ligando "+SMT.getNome()+"...");
