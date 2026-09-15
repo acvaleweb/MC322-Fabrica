@@ -4,17 +4,19 @@ public class PlacaDeVideo extends Produto {
 
     private double demandaMateriaPrima;
     private double massa; // unidade: kg
+    private String tipo;
 
     // Construtor
 
-    public PlacaDeVideo(String id, String nome, double demandaMateriaPrima, double massa) {
-        super(id, nome, status);
+    public PlacaDeVideo(String id, String nome, double demandaMateriaPrima, double massa, String tipo) {
+        super(id, nome);
         this.demandaMateriaPrima = demandaMateriaPrima;
         this.massa = massa;
+        this.tipo = tipo;
     }
-
+    @Override
     public void processar() {
-        this.status = StatusProduto.PROCESSADO;
+        setStatus(StatusProduto.PROCESSADO);
     }
 
     public boolean definirDemandaMateriaPrima(double quantidade) {
@@ -36,9 +38,17 @@ public class PlacaDeVideo extends Produto {
         return massa;
     }
 
-    // Setters
+    // Outros
 
-    public void setStatus(StatusProduto status) {
-        this.status = status;
+    @Override
+    double calcularTempoProducao() {
+        return 0;   // placeholder
+
+    };
+
+    @Override
+	public String getTipo() {
+        return tipo;
+        
     }
 }
