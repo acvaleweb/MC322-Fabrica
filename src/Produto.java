@@ -7,17 +7,22 @@ abstract class Produto {
 	private double  probabilidadeFalhaAcumulada;
 	private int totalProdutosFabricados;
 	
-	abstract void processar();
-	abstract double calcularTempoProducao();
-	abstract String getTipo();
+	public abstract void processar();
+	public abstract double calcularTempoProducao();
+	public abstract String getTipo();
 
 
 	// Construtor
 
-	public Produto(String id, String nome, StatusProduto status) {
+	protected Produto(String id, String nome, StatusProduto status) {
         this.id = id;
         this.nome = nome;
         this.status = StatusProduto.AGUARDANDO_PROCESSAMENTO;
+	this.quantidadeMateriaPrimaPorUnidade = quantidadeMateriaPrimaPorUnidade;
+	this.qualidade = qualidade;
+	this.probabilidadeFalhaAcumulada = 0.0;
+	this.massa = massa;
+	totalProdutosFabricados++;
     }
 
 
@@ -41,6 +46,14 @@ abstract class Produto {
 	public double getQualidade() {
 		return qualidade;
 
+	}
+
+	public double getProbabilidadeFalhaAcumulada() {
+		return probabilidadeFalhaAcumulada;
+	}
+
+	public double getMassa() {
+		return massa;
 	}
 
 	
