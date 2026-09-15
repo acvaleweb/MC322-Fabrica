@@ -3,13 +3,15 @@ public class MateriaPrima {
     private String nome;
     private double quantidade;
     private String unidade;
+    private double custoPorUnidade;
     private double quantidadeMinima;
 
-    public MateriaPrima(String id, String nome, double quantidade, String unidade, double quantidadeMinima) {
+    public MateriaPrima(String id, String nome, double quantidade, String unidade, double custoPorUnidade, double quantidadeMinima) {
         this.id = id;
         this.nome = nome;
         this.quantidade = quantidade;
         this.unidade = unidade;
+        this.custoPorUnidade = custoPorUnidade;
         this.quantidadeMinima = quantidadeMinima;
     }
 
@@ -63,6 +65,10 @@ public class MateriaPrima {
 
     public String getUnidade() {
         return unidade;
+    }
+
+    public double getCustoPorUnidade() {
+        return custoPorUnidade;
     }
 
     public double getQuantidadeMinima() {
