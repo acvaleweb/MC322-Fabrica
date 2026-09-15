@@ -4,5 +4,4 @@ public class Main {
         MenuConsole menu = new MenuConsole();
         menu.iniciar();
     }
-
 }

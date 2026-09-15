@@ -20,6 +20,7 @@ public class MenuConsole {
                 "Andesite 5nm 3840C 2.5GHz",
                 10,
                 "unidade",
+                50.0,
                 1);
 
         placaVideoHigh = new Produto(
