@@ -38,12 +38,17 @@ public class Maquina {
         return true;
     }
 
+    // Getters
+
     public String getNome() {
         return nome;
+    }
+
+    public double getCapacidadeMaxima() {
+        return capacidadeMaxima;
     }
 
     public boolean estaLigada() {
         return ligada;
     }
-
 }

@@ -25,6 +25,8 @@ public class EstacaoInspecao {
         return true;
     }
 
+    // Getters
+
     public int getTotalInspecionados() {
         return this.produtosInspecionados;
     }
