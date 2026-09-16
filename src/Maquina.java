@@ -35,6 +35,10 @@ public abstract class Maquina {
         return random.nextDouble() < this.probabilidadeFalha;
     }
 
+    protected boolean podeProcessar(Produto produto) {
+        return this.ligada && produto != null;
+    }
+
     // Getters
 
     public String getNome() {

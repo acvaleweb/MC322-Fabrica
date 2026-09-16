@@ -9,7 +9,7 @@ public class MenuConsole {
     private final Produto placaVideoHigh;
     private final Maquina maquinaSMT;
     private final Esteira esteiraProducao;
-    private final EstacaoInspecao estacaoInspecao;
+    private final Inspetora estacaoInspecao;
 
     public MenuConsole() {
 
@@ -45,7 +45,7 @@ public class MenuConsole {
 
         esteiraProducao = new Esteira(5.5);
 
-        estacaoInspecao = new EstacaoInspecao();
+        estacaoInspecao = new Inspetora();
     }
 
     // ======================================================
