@@ -11,6 +11,7 @@ public class Demanda {
 
     public void atualizarQuantidade(int novaQuantidade) {
         this.quantidadeProdutos = novaQuantidade;
+        this.atendida = false;
     }
 
     public double calcularMateriaPrimaNecessaria(Produto produto) {
@@ -22,7 +23,7 @@ public class Demanda {
     }
 
     // Getters
-    
+
     public String getTipoProduto() {
         return tipoProduto;
     }

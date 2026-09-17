@@ -24,6 +24,18 @@ public class GerenciadorProducao {
     }
 
     // ======================================================
+    // Utilidades
+    // ======================================================
+
+    private void pausar(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // ======================================================
     // Configuração (chamada uma vez, na montagem da fábrica)
     // ======================================================
 
@@ -126,32 +138,59 @@ public class GerenciadorProducao {
         double materiaPrimaNecessaria = demanda.calcularMateriaPrimaNecessaria(molde);
         double custoOperacaoTotal = calcularCustoProducao(demanda.getQuantidadeProdutos());
 
+        System.out.println("\n==================================================");
+        System.out.println("INICIANDO PRODUCAO DE " + demanda.getQuantidadeProdutos()
+                + " UNIDADE(S) DE " + tipoProduto.toUpperCase());
+        System.out.println("==================================================");
+
+        System.out.println("Checando estoque de " + materiaPrima.getNome() + ": "
+                + materiaPrima.getQuantidade() + " " + materiaPrima.getUnidade() + "(s)");
+        pausar(100);
+
         if (!materiaPrima.verificarDisponibilidade(materiaPrimaNecessaria)) {
             System.out.println("[ERRO] Estoque insuficiente de " + materiaPrima.getNome()
                     + " para produzir " + demanda.getQuantidadeProdutos() + " unidade(s) de " + tipoProduto);
             return false;
         }
 
+        System.out.println("Checando budget disponivel: R$" + String.format("%.2f", budget));
+        pausar(100);
+
         if (budget < custoOperacaoTotal) {
             System.out.println("[ERRO] Budget insuficiente para o custo de operacao do lote de " + tipoProduto);
             return false;
         }
 
+        System.out.println("Estoque e budget suficientes. Consumindo " + materiaPrimaNecessaria + " "
+                + materiaPrima.getUnidade() + "(s) de " + materiaPrima.getNome());
         materiaPrima.consumir(materiaPrimaNecessaria);
+        pausar(100);
+
+        System.out.println("Reservando R$" + String.format("%.2f", custoOperacaoTotal)
+                + " do budget para custo de operacao do lote");
         budget -= custoOperacaoTotal;
+        pausar(100);
 
         int unidadesPerdidasNaLinha = 0;
         int unidadesRejeitadasNaInspecao = 0;
 
         for (int unidade = 0; unidade < demanda.getQuantidadeProdutos(); unidade++) {
+            System.out.println("\n--- Fabricando unidade " + (unidade + 1) + "/"
+                    + demanda.getQuantidadeProdutos() + " de " + tipoProduto + " ---");
+
             Produto produtoAtual = criarUnidadeDoMolde(molde);
             boolean chegouAoFimDaLinha = processarNasMaquinas(produtoAtual);
 
             if (!chegouAoFimDaLinha) {
+                System.out.println("[AVISO] Unidade travou na esteira e foi perdida");
                 unidadesPerdidasNaLinha++;
             } else if (produtoAtual.getStatus() == StatusProduto.INSPECIONADO) {
+                System.out.println(produtoAtual.getNome() + " (" + produtoAtual.getId()
+                        + ") aprovado na inspecao. Enviando para o armazem.");
                 produtosFabricados.add(produtoAtual);
             } else {
+                System.out.println("[AVISO] " + produtoAtual.getNome() + " (" + produtoAtual.getId()
+                        + ") rejeitado na inspecao.");
                 unidadesRejeitadasNaInspecao++;
             }
         }
@@ -160,6 +199,8 @@ public class GerenciadorProducao {
 
         int unidadesProduzidas = demanda.getQuantidadeProdutos() - unidadesPerdidasNaLinha
                 - unidadesRejeitadasNaInspecao;
+
+        System.out.println("\n==================================================");
         System.out.println("[OK] " +
                 unidadesProduzidas + " unidade(s) de " + tipoProduto + " fabricada(s) com sucesso");
 
@@ -171,28 +212,66 @@ public class GerenciadorProducao {
             System.out.println("[AVISO] " + unidadesRejeitadasNaInspecao
                     + " unidade(s) foram rejeitadas na inspecao");
         }
+        System.out.println("==================================================");
 
         return true;
     }
 
     // Transporta o produto pela esteira, passando por cada maquina da linha
-    // em sequencia (insersora -> montadora -> inspetora)
+    // em sequencia (insersora -> montadora -> inspetora), narrando cada etapa
     private boolean processarNasMaquinas(Produto produto) {
         for (Maquina maquina : maquinas) {
+            System.out.println("Checando estado da esteira...");
+            pausar(100);
+
             if (!esteira.estaEmMovimento()) {
+                System.out.println("Esteira parada. Ligando...");
                 esteira.ligar();
+                pausar(100);
+            } else {
+                System.out.println("Esteira ja em movimento.");
             }
 
             if (!esteira.adicionarItem(produto)) {
+                System.out.println("[ERRO] Esteira recusou o item (fora de capacidade ou ocupada). "
+                        + "Linha travou para esta unidade.");
                 esteira.desligar();
-                return false; // esteira recusou -- linha travou pra essa unidade
+                return false;
             }
+
+            System.out.println(produto.getNome() + " colocado na esteira");
+            pausar(100);
 
             Produto transportado = esteira.removerProduto();
 
+            System.out.println(produto.getNome() + " chegou na " + maquina.getNome()
+                    + ". Desligando esteira...");
+            esteira.desligar();
+            pausar(100);
+
+            System.out.println("Checando estado da " + maquina.getNome() + "...");
+            pausar(100);
+
+            if (maquina.estaLigada()) {
+                System.out.println(maquina.getNome() + " ja ligada. Desligando antes de reiniciar...");
+                maquina.desligar();
+                pausar(100);
+            }
+
+            System.out.println("Inserindo " + produto.getNome() + " em " + maquina.getNome() + "...");
+            pausar(100);
+
             maquina.ligar();
+            System.out.println("Ligando " + maquina.getNome() + "...");
+            pausar(100);
+
+            System.out.println("Realizando processamento (" + maquina.getTipo() + ")...");
             maquina.processar(transportado);
             maquina.desligar();
+
+            System.out.println(produto.getNome() + " -> status: " + transportado.getStatus());
+            System.out.println("Concluido. Desligando " + maquina.getNome() + "...");
+            pausar(100);
         }
 
         esteira.desligar();
