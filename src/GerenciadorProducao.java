@@ -3,14 +3,14 @@ import java.util.List;
 
 public class GerenciadorProducao {
     private ArrayList<Demanda> demandas;
-    private ArrayList<Produto> catalogoProdutos; // os produtos "modelo" da fábrica (moldes)
-    private ArrayList<Produto> produtosFabricados; // armazém
+    private ArrayList<Produto> catalogoProdutos;
+    private ArrayList<Produto> produtosFabricados;
     private ArrayList<Maquina> maquinas;
     private MateriaPrima materiaPrima;
     private Esteira esteira;
     private double budget;
 
-    private static int contadorUnidadesCriadas = 0; // usado pra gerar id unico de cada unidade
+    private static int contadorUnidadesCriadas = 0;
 
     public GerenciadorProducao(MateriaPrima materiaPrima, double budgetInicial,
             double capacidadeEsteira, ArrayList<Produto> catalogoProdutos) {
@@ -23,10 +23,6 @@ public class GerenciadorProducao {
         this.catalogoProdutos = catalogoProdutos;
     }
 
-    // ======================================================
-    // Utilidades
-    // ======================================================
-
     private void pausar(long ms) {
         try {
             Thread.sleep(ms);
@@ -35,26 +31,15 @@ public class GerenciadorProducao {
         }
     }
 
-    // ======================================================
-    // Configuração (chamada uma vez, na montagem da fábrica)
-    // ======================================================
-
-    // As máquinas devem ser adicionadas na ordem em que o produto passa por
-    // elas (insersora -> montadora -> inspetora), pois processarNasMaquinas
-    // percorre a lista nessa mesma sequência
     public void adicionarMaquina(Maquina maquina) {
         if (maquina != null) {
             maquinas.add(maquina);
         }
     }
 
-    // ======================================================
-    // Demandas
-    // ======================================================
-
     public boolean registrarDemanda(String tipoProduto) {
         if (tipoProduto == null || buscarDemanda(tipoProduto) != null) {
-            return false; // ja existe demanda cadastrada para esse tipo
+            return false;
         }
 
         demandas.add(new Demanda(tipoProduto));
@@ -89,7 +74,6 @@ public class GerenciadorProducao {
         return null;
     }
 
-    // Cria uma unidade nova a partir do molde do catálogo
     private Produto criarUnidadeDoMolde(Produto molde) {
         String novoId = molde.getId() + "-" + (++contadorUnidadesCriadas);
 
@@ -105,11 +89,6 @@ public class GerenciadorProducao {
         return null;
     }
 
-    // ======================================================
-    // Fabricação
-    // ======================================================
-
-    // Tenta atender integralmente a demanda de um tipo de produto
     public boolean fabricarDemanda(String tipoProduto) {
         Demanda demanda = buscarDemanda(tipoProduto);
 
@@ -217,8 +196,6 @@ public class GerenciadorProducao {
         return true;
     }
 
-    // Transporta o produto pela esteira, passando por cada maquina da linha
-    // em sequencia (insersora -> montadora -> inspetora), narrando cada etapa
     private boolean processarNasMaquinas(Produto produto) {
         for (Maquina maquina : maquinas) {
             System.out.println("Checando estado da esteira...");
@@ -286,10 +263,6 @@ public class GerenciadorProducao {
         return custoPorUnidade * quantidadeUnidades;
     }
 
-    // ======================================================
-    // Matéria-prima
-    // ======================================================
-
     public boolean comprarMateriaPrima(double quantidade) {
         if (quantidade <= 0 || !materiaPrima.atendeLoteMinimo(quantidade)) {
             return false;
@@ -305,12 +278,8 @@ public class GerenciadorProducao {
         return true;
     }
 
-    // ======================================================
-    // Consultas
-    // ======================================================
-
     public void exibirBudget() {
-        System.out.printf("Budget atual: R$%.2f/n", budget);
+        System.out.printf("Budget atual: R$%.2f\n", budget);
     }
 
     public void exibirArmazem() {
@@ -324,8 +293,6 @@ public class GerenciadorProducao {
                     + " | qualidade: " + produto.getQualidade());
         }
     }
-
-    // Getters
 
     public double getBudget() {
         return budget;

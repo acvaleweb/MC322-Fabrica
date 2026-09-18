@@ -17,12 +17,10 @@ public abstract class Maquina {
         this.random = new Random();
     }
 
-    // Metodos Abstratos
     public abstract void processar(Produto produto);
 
     public abstract String getTipo();
 
-    // Metodos Concretos
     public void ligar() {
         this.ligada = true;
     }
@@ -36,10 +34,8 @@ public abstract class Maquina {
     }
 
     protected boolean podeProcessar(Produto produto) {
-        return this.ligada && produto != null;
+        return this.ligada && produto != null && produto.getMassa() <= this.capacidadeMaxima;
     }
-
-    // Getters
 
     public String getNome() {
         return nome;
