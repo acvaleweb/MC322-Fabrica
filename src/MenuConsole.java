@@ -38,7 +38,10 @@ public class MenuConsole {
         catalogo.add(new ComponentePerformance("PROD-MB-002", "Granite G8000", CategoriaProduto.PLACA_MAE, 3, 1.0));
         catalogo.add(new ComponenteFlagship("PROD-MB-003", "Granite G9000", CategoriaProduto.PLACA_MAE, 4, 1.2));
 
-        gerenciador = new GerenciadorProducao(materiaPrima, 1000.0, 5.5, (ArrayList<Produto>) catalogo);
+        Cenario cenario = escolherCenario();
+
+        gerenciador = new GerenciadorProducao(materiaPrima, cenario, 5.5, (ArrayList<Produto>) catalogo,
+                new EstrategiaFilaDaFundicao());
 
         // Ordem de montagem: insersora -> montadora -> inspetora
         gerenciador.adicionarMaquina(new InsersoraSMT("Insersora SMT-01", 5, 0.10, 15.0));
@@ -123,17 +126,58 @@ public class MenuConsole {
     }
 
     // ======================================================
-    // Auxiliar: produtos de uma categoria, na ordem do catálogo
+    // Escolha de cenário (início da execução)
     // ======================================================
 
-    private List<Produto> produtosDaCategoria(CategoriaProduto categoria) {
-        List<Produto> resultado = new ArrayList<>();
-        for (Produto produto : catalogo) {
-            if (produto.getCategoria() == categoria) {
-                resultado.add(produto);
+    private Cenario escolherCenario() {
+        cabecalho("ESCOLHA DE CENARIO");
+        System.out.println(" 1 - " + Cenario.IDEAL.getNomeExibicao()
+                + " (budget farto, baixa falha e desgaste reduzido)");
+        System.out.println(" 2 - " + Cenario.APOCALIPTICO.getNomeExibicao()
+                + " (budget apertado, alta falha e desgaste acelerado)");
+        linhaFina();
+
+        while (true) {
+            System.out.print("\nEscolha um cenario: ");
+            String opcao = scanner.nextLine().trim();
+
+            if (opcao.equals("1")) {
+                return Cenario.IDEAL;
             }
+            if (opcao.equals("2")) {
+                return Cenario.APOCALIPTICO;
+            }
+            erro("Opcao invalida. Digite 1 ou 2");
         }
-        return resultado;
+    }
+
+    // ======================================================
+    // Auxiliar: escolher um produto do catálogo
+    // ======================================================
+
+    private void listarCatalogoNumerado() {
+        for (int i = 0; i < catalogo.size(); i++) {
+            Produto produto = catalogo.get(i);
+            System.out.println(" " + (i + 1) + " - " + produto.getNome()
+                    + " (" + produto.getCategoria().getNomeExibicao() + ")");
+        }
+    }
+
+    private Produto escolherProdutoDoCatalogo() {
+        cabecalho("ESCOLHER PRODUTO");
+        listarCatalogoNumerado();
+        linhaFina();
+
+        int escolha = lerEntradaInt("\nNumero do produto (0 para cancelar): ");
+
+        if (escolha == 0) {
+            return null;
+        }
+        if (escolha < 1 || escolha > catalogo.size()) {
+            erro("Produto invalido");
+            return null;
+        }
+        return catalogo.get(escolha - 1);
     }
 
     // ======================================================
@@ -144,100 +188,131 @@ public class MenuConsole {
         cabecalho("ANDESITE HARDWARE CO.");
         titulo("\"Silício, solda e ambição\"");
         linha();
+        System.out.println("ESTRATEGIA ATUAL: " + gerenciador.getEstrategiaAtual().getNomeEstrategia());
+        System.out.println("CENARIO ATIVO: " + gerenciador.getCenarioAtual().getNomeExibicao());
         System.out.printf("BUDGET ATUAL: R$%.2f%n", gerenciador.getBudget());
         linhaFina();
 
-        System.out.println("LINHAS DE PRODUÇÃO");
-        System.out.println(" 1 - Placas de Vídeo (Andesite)");
-        System.out.println(" 2 - Processadores (Basalt)");
-        System.out.println(" 3 - Placas-Mãe (Granite)");
+        System.out.println(" [1] - Demandas");
+        System.out.println(" [2] - Fabricação");
+        System.out.println(" [3] - Consultar");
+        System.out.println(" [4] - Comprar matéria-prima");
+        System.out.println(" [5] - Gerenciar estratégia de produção");
+        System.out.println(" [6] - Auditoria");
         System.out.println();
-
-        System.out.println("CONSULTAR");
-        System.out.println(" 4 - Ver armazém");
-        System.out.println(" 5 - Ver estoque de matéria-prima");
-        System.out.println(" 6 - Ver demandas");
-        System.out.println();
-
-        System.out.println("COMPRAR MATÉRIA-PRIMA");
-        System.out.println(" 7 - Comprar " + materiaPrima.getNome());
-        System.out.println();
-
-        System.out.println(" 0 - SAIR");
+        System.out.println(" [0] - SAIR");
         linhaFina();
     }
 
     // ======================================================
-    // Submenu de uma linha de produto (categoria)
+    // Submenu: Demandas
     // ======================================================
 
-    private void iniciarMenuCategoria(CategoriaProduto categoria) {
-        List<Produto> produtos = produtosDaCategoria(categoria);
-        int n = produtos.size();
-
+    private void iniciarMenuDemandas() {
         while (true) {
-            cabecalho(("LINHA " + categoria.getNomeExibicao()).toUpperCase());
-            System.out.printf("BUDGET ATUAL: R$%.2f%n", gerenciador.getBudget());
-            linhaFina();
-
-            System.out.println("ATUALIZAR DEMANDAS");
-            for (int i = 0; i < n; i++) {
-                System.out.println(" " + (i + 1) + " - Atualizar demanda de " + produtos.get(i).getNome());
-            }
-            System.out.println();
-
-            System.out.println("FABRICAR");
-            for (int i = 0; i < n; i++) {
-                System.out.println(" " + (n + i + 1) + " - Fabricar " + produtos.get(i).getNome());
-            }
-            System.out.println();
-
-            System.out.println(" 0 - Voltar ao menu principal");
+            cabecalho("DEMANDAS");
+            System.out.println(" [1] - Atualizar demanda de um produto");
+            System.out.println(" [2] - Listar demandas");
+            System.out.println(" [3] - Cancelar demanda de um produto");
+            System.out.println(" [0] - Voltar ao menu principal");
             linhaFina();
 
             String opcao = lerEntrada();
 
-            if (opcao.equals("0")) {
-                return;
-            }
-
-            int escolha;
-            try {
-                escolha = Integer.parseInt(opcao);
-            } catch (NumberFormatException e) {
-                erro("Opção inválida. Escolha um número do menu");
-                continue;
-            }
-
-            if (escolha >= 1 && escolha <= n) {
-                iniciarMenuAtualizarDemanda(produtos.get(escolha - 1));
-            } else if (escolha >= n + 1 && escolha <= 2 * n) {
-                iniciarMenuFabricar(produtos.get(escolha - n - 1));
-            } else {
-                erro("Opção inválida. Escolha um número do menu");
+            switch (opcao) {
+                case "1":
+                    Produto produtoParaAtualizar = escolherProdutoDoCatalogo();
+                    if (produtoParaAtualizar != null) {
+                        iniciarMenuAtualizarDemanda(produtoParaAtualizar);
+                    }
+                    break;
+                case "2":
+                    exibirTelaDemandas();
+                    break;
+                case "3":
+                    Produto produtoParaCancelar = escolherProdutoDoCatalogo();
+                    if (produtoParaCancelar != null) {
+                        iniciarMenuCancelarDemanda(produtoParaCancelar);
+                    }
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
             }
         }
     }
 
-    // ======================================================
-    // Fluxo: atualizar demanda
-    // ======================================================
+    private void iniciarMenuCancelarDemanda(Produto produto) {
+        if (!gerenciador.cancelarDemanda(produto.getNome())) {
+            erro("Não foi possível cancelar. A demanda já foi concluída ou não existe");
+            return;
+        }
+        ok("Demanda de " + produto.getNome() + " cancelada");
+    }
 
     private void iniciarMenuAtualizarDemanda(Produto produto) {
         cabecalho("ATUALIZAR DEMANDA: " + produto.getNome());
         int novaQuantidade = lerEntradaInt("Quantas unidades de " + produto.getNome() + " deseja demandar? ");
 
         if (!gerenciador.atualizarDemanda(produto.getNome(), novaQuantidade)) {
-            erro("Não foi possível atualizar a demanda. Verifique se a quantidade é válida");
+            erro("Não foi possível atualizar a demanda. Verifique se ela já está em produção/concluída");
             return;
         }
 
         ok("Demanda de " + produto.getNome() + " atualizada para " + novaQuantidade + " unidade(s)");
     }
 
+    private void exibirTelaDemandas() {
+        cabecalho("DEMANDAS REGISTRADAS");
+        List<Demanda> demandas = gerenciador.getDemandas();
+
+        if (demandas.isEmpty()) {
+            System.out.println("Nenhuma demanda registrada.");
+        }
+
+        for (Demanda demanda : demandas) {
+            System.out.println(" - " + demanda.getTipoProduto()
+                    + " | quantidade: " + demanda.getQuantidadeProdutos()
+                    + " | status: " + demanda.getStatus().getDescricao());
+        }
+        linhaFina();
+    }
+
     // ======================================================
-    // Fluxo: fabricação
+    // Submenu: Fabricação
     // ======================================================
+
+    private void iniciarMenuFabricacao() {
+        while (true) {
+            cabecalho("FABRICAÇÃO");
+            System.out.println(" [1] - Processar próxima demanda (estratégia: "
+                    + gerenciador.getEstrategiaAtual().getNomeEstrategia() + ")");
+            System.out.println(" [2] - Fabricar produto específico");
+            System.out.println(" [0] - Voltar ao menu principal");
+            linhaFina();
+
+            String opcao = lerEntrada();
+
+            switch (opcao) {
+                case "1":
+                    cabecalho("PROCESSANDO PROXIMA DEMANDA");
+                    gerenciador.executarProximaProducao();
+                    info("Budget restante: R$" + String.format("%.2f", gerenciador.getBudget()));
+                    break;
+                case "2":
+                    Produto produtoParaFabricar = escolherProdutoDoCatalogo();
+                    if (produtoParaFabricar != null) {
+                        iniciarMenuFabricar(produtoParaFabricar);
+                    }
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
+            }
+        }
+    }
 
     private void iniciarMenuFabricar(Produto produto) {
         cabecalho("FABRICANDO: " + produto.getNome());
@@ -247,8 +322,33 @@ public class MenuConsole {
     }
 
     // ======================================================
-    // Fluxo: consultas
+    // Submenu: Consultar
     // ======================================================
+
+    private void iniciarMenuConsultar() {
+        while (true) {
+            cabecalho("CONSULTAR");
+            System.out.println(" [1] - Ver armazém (produtos acabados)");
+            System.out.println(" [2] - Ver estoque de matéria-prima");
+            System.out.println(" [0] - Voltar ao menu principal");
+            linhaFina();
+
+            String opcao = lerEntrada();
+
+            switch (opcao) {
+                case "1":
+                    exibirTelaArmazem();
+                    break;
+                case "2":
+                    exibirTelaEstoque();
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
+            }
+        }
+    }
 
     private void exibirTelaArmazem() {
         cabecalho("ARMAZÉM DA FÁBRICA");
@@ -264,23 +364,6 @@ public class MenuConsole {
         System.out.println("   Lote mínimo de compra: " + materiaPrima.getQuantidadeMinima() + " "
                 + materiaPrima.getUnidade() + "(s)");
         System.out.println("   Custo por unidade: R$" + String.format("%.2f", materiaPrima.getCustoPorUnidade()));
-        linhaFina();
-    }
-
-    private void exibirTelaDemandas() {
-        cabecalho("DEMANDAS REGISTRADAS");
-        List<Demanda> demandas = gerenciador.getDemandas();
-
-        if (demandas.isEmpty()) {
-            System.out.println("Nenhuma demanda registrada.");
-        }
-
-        for (Demanda demanda : demandas) {
-            String status = demanda.isAtendida() ? "Atendida" : "Pendente";
-            System.out.println(" - " + demanda.getTipoProduto()
-                    + " | quantidade: " + demanda.getQuantidadeProdutos()
-                    + " | status: " + status);
-        }
         linhaFina();
     }
 
@@ -318,6 +401,105 @@ public class MenuConsole {
     }
 
     // ======================================================
+    // Submenu: Estratégia de produção
+    // ======================================================
+
+    private void iniciarMenuEstrategia() {
+        while (true) {
+            cabecalho("ESTRATEGIA DE PRODUCAO");
+            System.out.println("Estrategia ativa: " + gerenciador.getEstrategiaAtual().getNomeEstrategia());
+            linhaFina();
+            System.out.println(" [1] - Fila da Fundição (FIFO)");
+            System.out.println(" [2] - Maior Lote");
+            System.out.println(" [3] - Máximo Rendimento");
+            System.out.println(" [0] - Voltar ao menu principal");
+            linhaFina();
+
+            String opcao = lerEntrada();
+
+            switch (opcao) {
+                case "1":
+                    gerenciador.setEstrategia(new EstrategiaFilaDaFundicao());
+                    ok("Estrategia alterada para Fila da Fundição");
+                    break;
+                case "2":
+                    gerenciador.setEstrategia(new EstrategiaMaiorLote());
+                    ok("Estrategia alterada para Maior Lote");
+                    break;
+                case "3":
+                    gerenciador.setEstrategia(new EstrategiaMaximoRendimento());
+                    ok("Estrategia alterada para Máximo Rendimento");
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
+            }
+        }
+    }
+
+    // ======================================================
+    // Submenu: Auditoria
+    // ======================================================
+
+    private void iniciarMenuAuditoria() {
+        while (true) {
+            cabecalho("AUDITORIA");
+            System.out.println(" [1] - Relatorio geral (maquinas + produtos)");
+            System.out.println(" [2] - Detalhar maquinas");
+            System.out.println(" [3] - Detalhar produtos no armazem");
+            System.out.println(" [0] - Voltar ao menu principal");
+            linhaFina();
+
+            String opcao = lerEntrada();
+
+            switch (opcao) {
+                case "1":
+                    gerenciador.gerarAuditoriaGeral();
+                    break;
+                case "2":
+                    exibirDetalheMaquinas();
+                    break;
+                case "3":
+                    exibirDetalheProdutos();
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
+            }
+        }
+    }
+
+    private void exibirDetalheMaquinas() {
+        cabecalho("DIAGNOSTICO DAS MAQUINAS");
+        List<Maquina> maquinas = gerenciador.getMaquinas();
+
+        if (maquinas.isEmpty()) {
+            System.out.println("Nenhuma maquina cadastrada.");
+        }
+
+        for (Maquina maquina : maquinas) {
+            System.out.println(" - " + maquina.gerarRelatorioDiagnostico());
+        }
+        linhaFina();
+    }
+
+    private void exibirDetalheProdutos() {
+        cabecalho("DIAGNOSTICO DOS PRODUTOS NO ARMAZEM");
+        List<Produto> produtos = gerenciador.getArmazem();
+
+        if (produtos.isEmpty()) {
+            System.out.println("Armazem vazio.");
+        }
+
+        for (Produto produto : produtos) {
+            System.out.println(" - " + produto.gerarRelatorioDiagnostico());
+        }
+        linhaFina();
+    }
+
+    // ======================================================
     // Loop principal
     // ======================================================
 
@@ -328,25 +510,22 @@ public class MenuConsole {
 
             switch (opcao) {
                 case "1":
-                    iniciarMenuCategoria(CategoriaProduto.PLACA_DE_VIDEO);
+                    iniciarMenuDemandas();
                     break;
                 case "2":
-                    iniciarMenuCategoria(CategoriaProduto.PROCESSADOR);
+                    iniciarMenuFabricacao();
                     break;
                 case "3":
-                    iniciarMenuCategoria(CategoriaProduto.PLACA_MAE);
+                    iniciarMenuConsultar();
                     break;
                 case "4":
-                    exibirTelaArmazem();
+                    iniciarMenuCompra();
                     break;
                 case "5":
-                    exibirTelaEstoque();
+                    iniciarMenuEstrategia();
                     break;
                 case "6":
-                    exibirTelaDemandas();
-                    break;
-                case "7":
-                    iniciarMenuCompra();
+                    iniciarMenuAuditoria();
                     break;
                 case "0":
                     System.out.println();
