@@ -9,6 +9,7 @@ public class GerenciadorProducao {
     private MateriaPrima materiaPrima;
     private Esteira esteira;
     private double budget;
+    private EstrategiaProducao estrategiaAtual;
 
     private static int contadorUnidadesCriadas = 0;
 
@@ -21,6 +22,7 @@ public class GerenciadorProducao {
         this.esteira = new Esteira(capacidadeEsteira);
         this.budget = budgetInicial;
         this.catalogoProdutos = catalogoProdutos;
+        this.estrategiaAtual = new EstrategiaOrdemChegada(); // estrategia padrao
     }
 
     private void pausar(long ms) {
@@ -89,6 +91,43 @@ public class GerenciadorProducao {
         return null;
     }
 
+    // ======================================================
+    // Padrao Strategy: selecao da proxima demanda delegada ao objeto estrategia
+    // ======================================================
+
+    public void setEstrategia(EstrategiaProducao novaEstrategia) {
+        if (novaEstrategia != null) {
+            this.estrategiaAtual = novaEstrategia;
+        }
+    }
+
+    public EstrategiaProducao getEstrategiaAtual() {
+        return estrategiaAtual;
+    }
+
+    public boolean executarProximaProducao() {
+        // o custo de operacao por unidade e o mesmo para qualquer produto (soma do custo
+        // das maquinas da linha), entao sincronizamos essa estimativa nas demandas antes
+        // de perguntar pra estrategia qual delas e viavel/prioritaria
+        double custoUnitario = calcularCustoProducao(1);
+        for (Demanda demanda : demandas) {
+            demanda.setCustoUnitarioEstimado(custoUnitario);
+        }
+
+        Demanda escolhida = estrategiaAtual.selecionarDemanda(demandas, budget);
+
+        if (escolhida == null) {
+            System.out.println("[ERRO] Estrategia \"" + estrategiaAtual.getNomeEstrategia()
+                    + "\" nao encontrou nenhuma demanda elegivel no momento");
+            return false;
+        }
+
+        System.out.println("[ESTRATEGIA: " + estrategiaAtual.getNomeEstrategia() + "] Demanda selecionada: "
+                + escolhida.getTipoProduto());
+
+        return fabricarDemanda(escolhida.getTipoProduto());
+    }
+
     public boolean fabricarDemanda(String tipoProduto) {
         Demanda demanda = buscarDemanda(tipoProduto);
 
@@ -97,8 +136,8 @@ public class GerenciadorProducao {
             return false;
         }
 
-        if (demanda.isAtendida()) {
-            System.out.println("[ERRO] Demanda de " + tipoProduto + " ja foi atendida");
+        if (demanda.getStatus() == StatusDemanda.CONCLUIDA) {
+            System.out.println("[ERRO] Demanda de " + tipoProduto + " ja foi concluida");
             return false;
         }
 
@@ -129,6 +168,8 @@ public class GerenciadorProducao {
         if (!materiaPrima.verificarDisponibilidade(materiaPrimaNecessaria)) {
             System.out.println("[ERRO] Estoque insuficiente de " + materiaPrima.getNome()
                     + " para produzir " + demanda.getQuantidadeProdutos() + " unidade(s) de " + tipoProduto);
+            demanda.cancelar();
+            System.out.println("[AVISO] Demanda de " + tipoProduto + " marcada como CANCELADA por falta de insumos");
             return false;
         }
 
@@ -137,8 +178,12 @@ public class GerenciadorProducao {
 
         if (budget < custoOperacaoTotal) {
             System.out.println("[ERRO] Budget insuficiente para o custo de operacao do lote de " + tipoProduto);
+            demanda.cancelar();
+            System.out.println("[AVISO] Demanda de " + tipoProduto + " marcada como CANCELADA por falta de orcamento");
             return false;
         }
+
+        demanda.iniciarProducao();
 
         System.out.println("Estoque e budget suficientes. Consumindo " + materiaPrimaNecessaria + " "
                 + materiaPrima.getUnidade() + "(s) de " + materiaPrima.getNome());
@@ -174,7 +219,7 @@ public class GerenciadorProducao {
             }
         }
 
-        demanda.atender();
+        demanda.concluir();
 
         int unidadesProduzidas = demanda.getQuantidadeProdutos() - unidadesPerdidasNaLinha
                 - unidadesRejeitadasNaInspecao;
@@ -287,10 +332,46 @@ public class GerenciadorProducao {
             System.out.println("Armazem vazio.");
             return;
         }
+
+        System.out.println("Total de unidades em estoque: " + produtosFabricados.size());
+        System.out.println();
+
         for (Produto produto : produtosFabricados) {
-            System.out.println(" - " + produto.getNome() + " (" + produto.getId() + ") | "
+            String risco = produto.precisaManutencao() ? "ALTO" : "normal";
+            System.out.println(" - " + produto.getNome() + " (lote " + produto.getId() + ") | "
                     + produto.getCategoria().getNomeExibicao() + " | tier: " + produto.getTipo()
-                    + " | qualidade: " + produto.getQualidade());
+                    + " | qualidade: " + String.format("%.2f", produto.getQualidade())
+                    + " | risco: " + risco);
+        }
+    }
+
+
+    public void gerarAuditoriaGeral() {
+        System.out.println("\n==================================================");
+        System.out.println("RELATORIO DE AUDITORIA GERAL DA PLANTA");
+        System.out.println("==================================================");
+
+        System.out.println("\n-- MAQUINAS --");
+        for (Auditavel maquina : maquinas) {
+            auditarItem(maquina);
+        }
+
+        System.out.println("\n-- PRODUTOS EM ARMAZEM --");
+        if (produtosFabricados.isEmpty()) {
+            System.out.println(" Nenhum produto em estoque.");
+        }
+        for (Auditavel produto : produtosFabricados) {
+            auditarItem(produto);
+        }
+        System.out.println("==================================================");
+    }
+
+    // Percorre qualquer colecao de Auditavel e imprime o diagnostico e alerta
+
+    private void auditarItem(Auditavel item) {
+        System.out.println(" - " + item.gerarRelatorioDiagnostico());
+        if (item.precisaManutencao()) {
+            System.out.println("   [ALERTA] Requer atencao/manutencao");
         }
     }
 
