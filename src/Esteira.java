@@ -1,5 +1,4 @@
 public class Esteira {
-    private MateriaPrima itemMateriaPrima;
     private Produto itemProduto;
     private boolean emMovimento;
     private double quantidade; // carga atual na esteira
@@ -7,7 +6,6 @@ public class Esteira {
 
     public Esteira(double capacidadeMaxima) {
         this.capacidadeMaxima = capacidadeMaxima;
-        this.itemMateriaPrima = null;
         this.itemProduto = null;
         this.emMovimento = false;
         this.quantidade = 0;
@@ -19,20 +17,6 @@ public class Esteira {
 
     public void desligar() {
         emMovimento = false;
-    }
-
-    public boolean adicionarItem(MateriaPrima materiaPrima, double quantidade) {
-        if (!emMovimento || !estaVazia() || materiaPrima == null) {
-            return false;
-        }
-
-        if (!verificarCapacidade(quantidade)) {
-            return false;
-        }
-
-        this.itemMateriaPrima = materiaPrima;
-        this.quantidade = quantidade;
-        return true;
     }
 
     public boolean adicionarItem(Produto produto) {
@@ -47,18 +31,6 @@ public class Esteira {
         this.itemProduto = produto;
         this.quantidade = produto.getMassa();
         return true;
-    }
-
-    public MateriaPrima removerMateriaPrima() {
-        if (!emMovimento || itemMateriaPrima == null) {
-            return null;
-        }
-
-        MateriaPrima removida = itemMateriaPrima;
-        itemMateriaPrima = null;
-        quantidade = 0;
-
-        return removida;
     }
 
     public Produto removerProduto() {
@@ -78,7 +50,7 @@ public class Esteira {
     }
 
     public boolean estaVazia() {
-        return itemMateriaPrima == null && itemProduto == null;
+        return itemProduto == null;
     }
 
     public boolean estaEmMovimento() {
@@ -86,10 +58,6 @@ public class Esteira {
     }
 
     // Getters
-
-    public MateriaPrima getMateriaPrima() {
-        return itemMateriaPrima;
-    }
 
     public Produto getProduto() {
         return itemProduto;
