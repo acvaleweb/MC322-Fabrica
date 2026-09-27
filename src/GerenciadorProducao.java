@@ -34,7 +34,12 @@ public class GerenciadorProducao {
     }
 
     public boolean executarProximaProducao() {
-        Demanda demandaEscolhida = estrategiaAtual.selecionarDemanda(demandas, budget);
+        // Converte o budget em "quantas unidades cabem no orcamento", ja que
+        // EstrategiaMaximoRendimento compara orcamentoDisponivel diretamente
+        // com a quantidade de unidades de uma demanda (ver comentario na classe)
+        double orcamentoEmUnidades = calcularOrcamentoEmUnidades();
+
+        Demanda demandaEscolhida = estrategiaAtual.selecionarDemanda(demandas, orcamentoEmUnidades);
 
         if (demandaEscolhida == null) {
             System.out.println("[INFO] Nenhuma demanda elegivel para a estrategia "
@@ -344,13 +349,32 @@ public class GerenciadorProducao {
         return true;
     }
 
-    private double calcularCustoProducao(int quantidadeUnidades) {
+    // Custo de operacao (soma de todas as maquinas da linha) para produzir 1
+    // unidade, usado tanto para orcar um lote (calcularCustoProducao) quanto
+    // para converter o budget em "unidades que cabem no orcamento" na hora de
+    // escolher a proxima demanda (calcularOrcamentoEmUnidades)
+    private double calcularCustoOperacaoPorUnidade() {
         double custoPorUnidade = 0;
 
         for (Maquina maquina : maquinas) {
             custoPorUnidade += maquina.getCustoOperacao();
         }
-        return custoPorUnidade * quantidadeUnidades;
+        return custoPorUnidade;
+    }
+
+    private double calcularCustoProducao(int quantidadeUnidades) {
+        return calcularCustoOperacaoPorUnidade() * quantidadeUnidades;
+    }
+
+    private double calcularOrcamentoEmUnidades() {
+        double custoPorUnidade = calcularCustoOperacaoPorUnidade();
+
+        if (custoPorUnidade <= 0) {
+            // sem maquinas cadastradas ainda: nao ha custo por unidade, entao
+            // nada limita a quantidade produzivel pelo orcamento
+            return Double.MAX_VALUE;
+        }
+        return budget / custoPorUnidade;
     }
 
     public boolean comprarMateriaPrima(double quantidade) {
@@ -390,7 +414,7 @@ public class GerenciadorProducao {
             nomesContados.add(produto.getNome());
 
             int quantidade = 0;
-            
+
             for (Produto outro : produtosFabricados) {
                 if (outro.getNome().equals(produto.getNome())) {
                     quantidade++;

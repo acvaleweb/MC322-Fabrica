@@ -2,12 +2,12 @@ import java.util.List;
 
 public class EstrategiaMaximoRendimento implements EstrategiaProducao {
 
-    // O metodo so recebe o orcamento disponivel, nao recebe o custo de cada
-    // produto. Por isso é usado quantidadeProdutos no lugar do custo, no
-    // projeto, todo produto tem o mesmo custo de producao por unidade, entao
-    // mais unidades pedidas = mais caro, na mesma proporcao. Entre as
-    // demandas que cabem no orcamento (usando essa comparacao), escolhe a
-    // que produz mais unidades
+    // orcamentoDisponivel chega aqui ja convertido pelo GerenciadorProducao para
+    // "quantas unidades cabem no orcamento restante" (budget / custo de operacao
+    // por unidade, ver calcularOrcamentoEmUnidades em GerenciadorProducao), entao
+    // comparar diretamente com quantidadeProdutos reflete a viabilidade real do
+    // lote, e nao apenas o valor bruto do budget em reais. Entre as demandas que
+    // cabem no orcamento, escolhe a que produz mais unidades
     @Override
     public Demanda selecionarDemanda(List<Demanda> demandas, double orcamentoDisponivel) {
         Demanda escolhida = null;
@@ -20,7 +20,7 @@ public class EstrategiaMaximoRendimento implements EstrategiaProducao {
             if (demanda.getQuantidadeProdutos() > orcamentoDisponivel) {
                 continue;
             }
-            
+
             if (escolhida == null || demanda.getQuantidadeProdutos() > escolhida.getQuantidadeProdutos()) {
                 escolhida = demanda;
             }
