@@ -1,4 +1,4 @@
-public abstract class Produto {
+public abstract class Produto implements Auditavel {
 	private String id;
 	private String nome;
 	private CategoriaProduto categoria;
@@ -11,6 +11,7 @@ public abstract class Produto {
 	private static int totalProdutosFabricados = 0;
 
 	private static final double INCREMENTO_FALHA = 0.1;
+	private static final double LIMIAR_RISCO = 0.5;
 
 	public abstract void processar();
 
@@ -33,6 +34,25 @@ public abstract class Produto {
 
 	public void aumentarProbabilidadeFalha() {
 		this.probabilidadeFalhaAcumulada = Math.min(probabilidadeFalhaAcumulada + INCREMENTO_FALHA, 1.0);
+	}
+
+	public boolean precisaManutencao() {
+		return probabilidadeFalhaAcumulada >= LIMIAR_RISCO;
+	}
+
+	public String gerarRelatorioDiagnostico() {
+		String risco = "OK";
+		if (precisaManutencao()) {
+			risco = "RISCO";
+		}
+		if (status == StatusProduto.REJEITADO) {
+			risco = "REJEITADO";
+		}
+
+		return getTipo() + " " + id + " (" + nome + ")"
+				+ " | qualidade: " + qualidade
+				+ " | falha acumulada: " + String.format("%.0f%%", probabilidadeFalhaAcumulada * 100)
+				+ " | " + risco;
 	}
 
 	// Getters
