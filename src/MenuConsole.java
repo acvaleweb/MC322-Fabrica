@@ -158,7 +158,7 @@ public class MenuConsole {
     private void listarCatalogoNumerado() {
         for (int i = 0; i < catalogo.size(); i++) {
             Produto produto = catalogo.get(i);
-            System.out.println(" " + (i + 1) + " - " + produto.getNome()
+            System.out.println(" [" + (i + 1) + "] - " + produto.getNome()
                     + " (" + produto.getCategoria().getNomeExibicao() + ")");
         }
     }
