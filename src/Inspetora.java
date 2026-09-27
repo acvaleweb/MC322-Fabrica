@@ -25,7 +25,7 @@ public class Inspetora extends Maquina {
     }
 
     private boolean falhouNaInspecao(Produto produto) {
-        double chanceRejeicao = probabilidadeFalha
+        double chanceRejeicao = calcularProbabilidadeFalhaEfetiva()
                 + produto.getProbabilidadeFalhaAcumulada()
                 + (produto.getQualidade() * FATOR_RIGOR_QUALIDADE);
 
