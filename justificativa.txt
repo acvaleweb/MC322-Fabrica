@@ -40,3 +40,18 @@ A inclusão progressiva desses elementos parciais é o que vai guiar o detalhame
 novos equipamentos e processos necessários para fabricá-los. A ideia é que o sistema
 se aproxime cada vez mais da dinâmica de uma fábrica real, de modo que seja possível
 imaginar este software sendo usado de fato como uma ferramenta de gestão de produção.
+
+3. O que mudou na Tarefa 3
+
+Na Tarefa 3 demos um passo na direção de tornar a gestão da fábrica mais realista.
+Agora dá pra escolher, no início da execução, entre operar num cenário Ideal ou num
+cenário Apocalíptico — o segundo aperta o orçamento e deixa as máquinas mais
+propensas a falhar e a se desgastar com o uso, simulando uma fábrica sob pressão de
+verdade. As máquinas passaram a ter uma espécie de "saúde" que cai a cada uso, e a
+fábrica ganhou uma tela de auditoria que mostra o estado de máquinas e produtos de
+uma vez só.
+
+Também demos à fábrica a capacidade de escolher, sozinha, qual demanda atender
+primeiro — dependendo da prioridade que o usuário define, ela pode seguir a ordem de
+chegada dos pedidos, priorizar o maior lote ou tentar extrair o máximo de produção
+possível do orçamento disponível.
