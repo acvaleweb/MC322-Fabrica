@@ -8,19 +8,71 @@ public class GerenciadorProducao {
     private ArrayList<Maquina> maquinas;
     private MateriaPrima materiaPrima;
     private Esteira esteira;
+    private Cenario cenarioAtual;
+    private EstrategiaProducao estrategiaAtual;
     private double budget;
 
     private static int contadorUnidadesCriadas = 0;
 
-    public GerenciadorProducao(MateriaPrima materiaPrima, double budgetInicial,
-            double capacidadeEsteira, ArrayList<Produto> catalogoProdutos) {
+    public GerenciadorProducao(MateriaPrima materiaPrima, Cenario cenario, double capacidadeEsteira,
+            ArrayList<Produto> catalogoProdutos, EstrategiaProducao estrategiaInicial) {
         this.demandas = new ArrayList<>();
         this.produtosFabricados = new ArrayList<>();
         this.maquinas = new ArrayList<>();
         this.materiaPrima = materiaPrima;
         this.esteira = new Esteira(capacidadeEsteira);
-        this.budget = budgetInicial;
+        this.cenarioAtual = cenario;
+        this.estrategiaAtual = estrategiaInicial;
+        this.budget = cenario.getBudgetInicial();
         this.catalogoProdutos = catalogoProdutos;
+    }
+
+    public void setEstrategia(EstrategiaProducao novaEstrategia) {
+        if (novaEstrategia != null) {
+            this.estrategiaAtual = novaEstrategia;
+        }
+    }
+
+    public boolean executarProximaProducao() {
+        Demanda demandaEscolhida = estrategiaAtual.selecionarDemanda(demandas, budget);
+
+        if (demandaEscolhida == null) {
+            System.out.println("[INFO] Nenhuma demanda elegivel para a estrategia "
+                    + estrategiaAtual.getNomeEstrategia());
+            return false;
+        }
+
+        System.out.println("[ESTRATEGIA: " + estrategiaAtual.getNomeEstrategia() + "] Selecionada: "
+                + demandaEscolhida.getTipoProduto());
+        return fabricarDemanda(demandaEscolhida.getTipoProduto());
+    }
+
+    public void gerarAuditoriaGeral() {
+        List<Auditavel> itensAuditaveis = new ArrayList<>();
+        itensAuditaveis.addAll(maquinas);
+        itensAuditaveis.addAll(produtosFabricados);
+
+        System.out.println("\n==================================================");
+        System.out.println("RELATORIO DE AUDITORIA DA PLANTA");
+        System.out.println("==================================================");
+
+        if (itensAuditaveis.isEmpty()) {
+            System.out.println("Nenhum componente auditavel registrado ainda.");
+            return;
+        }
+
+        int itensEmRisco = 0;
+        for (Auditavel item : itensAuditaveis) {
+            System.out.println(" - " + item.gerarRelatorioDiagnostico());
+            if (item.precisaManutencao()) {
+                itensEmRisco++;
+            }
+        }
+
+        System.out.println("--------------------------------------------------");
+        System.out.println("Total auditado: " + itensAuditaveis.size()
+                + " | itens que precisam de atencao: " + itensEmRisco);
+        System.out.println("==================================================");
     }
 
     private void pausar(long ms) {
@@ -31,10 +83,22 @@ public class GerenciadorProducao {
         }
     }
 
+    // Traduz o tempo de producao (categoria x tier) num atraso perceptivel na
+    // tela, de ~70ms (CPU Entrada) a ~270ms (Placa-Mae Flagship)
+    private long calcularDuracaoProcessamento(Produto produto) {
+        return Math.round(produto.calcularTempoProducao() * 15);
+    }
+
+    // As maquinas herdam a fragilidade e o desgaste do cenario ativo no
+    // momento em que entram na linha de producao
     public void adicionarMaquina(Maquina maquina) {
-        if (maquina != null) {
-            maquinas.add(maquina);
+        if (maquina == null) {
+            return;
         }
+
+        maquina.setProbabilidadeFalha(maquina.getProbabilidadeFalha() * cenarioAtual.getFatorProbabilidadeFalha());
+        maquina.setDesgastePorUso(cenarioAtual.getDesgasteMinimoPorUso(), cenarioAtual.getDesgasteMaximoPorUso());
+        maquinas.add(maquina);
     }
 
     public boolean registrarDemanda(String tipoProduto) {
@@ -48,12 +112,20 @@ public class GerenciadorProducao {
 
     public boolean atualizarDemanda(String tipoProduto, int novaQuantidade) {
         Demanda demanda = buscarDemanda(tipoProduto);
-        if (demanda == null || novaQuantidade < 0) {
+        if (demanda == null) {
             return false;
         }
 
-        demanda.atualizarQuantidade(novaQuantidade);
-        return true;
+        return demanda.atualizarQuantidade(novaQuantidade);
+    }
+
+    public boolean cancelarDemanda(String tipoProduto) {
+        Demanda demanda = buscarDemanda(tipoProduto);
+        if (demanda == null) {
+            return false;
+        }
+
+        return demanda.cancelar();
     }
 
     private Demanda buscarDemanda(String tipoProduto) {
@@ -80,9 +152,11 @@ public class GerenciadorProducao {
         if (molde instanceof ComponenteFlagship flagship) {
             return flagship.criarUnidade(novoId);
         }
+
         if (molde instanceof ComponentePerformance performance) {
             return performance.criarUnidade(novoId);
         }
+
         if (molde instanceof ComponenteEntrada entrada) {
             return entrada.criarUnidade(novoId);
         }
@@ -97,8 +171,13 @@ public class GerenciadorProducao {
             return false;
         }
 
-        if (demanda.isAtendida()) {
+        if (demanda.getStatus() == StatusDemanda.CONCLUIDA) {
             System.out.println("[ERRO] Demanda de " + tipoProduto + " ja foi atendida");
+            return false;
+        }
+
+        if (demanda.getStatus() == StatusDemanda.CANCELADA) {
+            System.out.println("[ERRO] Demanda de " + tipoProduto + " foi cancelada");
             return false;
         }
 
@@ -140,6 +219,8 @@ public class GerenciadorProducao {
             return false;
         }
 
+        demanda.iniciarProducao();
+
         System.out.println("Estoque e budget suficientes. Consumindo " + materiaPrimaNecessaria + " "
                 + materiaPrima.getUnidade() + "(s) de " + materiaPrima.getNome());
         materiaPrima.consumir(materiaPrimaNecessaria);
@@ -167,14 +248,19 @@ public class GerenciadorProducao {
                 System.out.println(produtoAtual.getNome() + " (" + produtoAtual.getId()
                         + ") aprovado na inspecao. Enviando para o armazem.");
                 produtosFabricados.add(produtoAtual);
-            } else {
+            } else if (produtoAtual.getStatus() == StatusProduto.REJEITADO) {
                 System.out.println("[AVISO] " + produtoAtual.getNome() + " (" + produtoAtual.getId()
                         + ") rejeitado na inspecao.");
+                unidadesRejeitadasNaInspecao++;
+            } else {
+                System.out.println("[AVISO] " + produtoAtual.getNome() + " (" + produtoAtual.getId()
+                        + ") nao completou a linha (status: " + produtoAtual.getStatus()
+                        + "). Alguma maquina quebrada ou indisponivel no meio do processo.");
                 unidadesRejeitadasNaInspecao++;
             }
         }
 
-        demanda.atender();
+        demanda.concluir();
 
         int unidadesProduzidas = demanda.getQuantidadeProdutos() - unidadesPerdidasNaLinha
                 - unidadesRejeitadasNaInspecao;
@@ -187,6 +273,7 @@ public class GerenciadorProducao {
             System.out.println("[AVISO] " + unidadesPerdidasNaLinha
                     + " unidade(s) travou/travaram na esteira e foram perdidas");
         }
+
         if (unidadesRejeitadasNaInspecao > 0) {
             System.out.println("[AVISO] " + unidadesRejeitadasNaInspecao
                     + " unidade(s) foram rejeitadas na inspecao");
@@ -243,7 +330,9 @@ public class GerenciadorProducao {
             pausar(100);
 
             System.out.println("Realizando processamento (" + maquina.getTipo() + ")...");
+            pausar(calcularDuracaoProcessamento(produto));
             maquina.processar(transportado);
+            maquina.desgastar();
             maquina.desligar();
 
             System.out.println(produto.getNome() + " -> status: " + transportado.getStatus());
@@ -257,6 +346,7 @@ public class GerenciadorProducao {
 
     private double calcularCustoProducao(int quantidadeUnidades) {
         double custoPorUnidade = 0;
+
         for (Maquina maquina : maquinas) {
             custoPorUnidade += maquina.getCustoOperacao();
         }
@@ -269,6 +359,7 @@ public class GerenciadorProducao {
         }
 
         double custoTotal = quantidade * materiaPrima.getCustoPorUnidade();
+
         if (budget < custoTotal) {
             return false;
         }
@@ -287,15 +378,60 @@ public class GerenciadorProducao {
             System.out.println("Armazem vazio.");
             return;
         }
+
+        List<String> nomesContados = new ArrayList<>();
+
+        System.out.println("Quantidade em estoque por produto:");
+
         for (Produto produto : produtosFabricados) {
-            System.out.println(" - " + produto.getNome() + " (" + produto.getId() + ") | "
-                    + produto.getCategoria().getNomeExibicao() + " | tier: " + produto.getTipo()
-                    + " | qualidade: " + produto.getQualidade());
+            if (nomesContados.contains(produto.getNome())) {
+                continue;
+            }
+            nomesContados.add(produto.getNome());
+
+            int quantidade = 0;
+            
+            for (Produto outro : produtosFabricados) {
+                if (outro.getNome().equals(produto.getNome())) {
+                    quantidade++;
+                }
+            }
+            System.out.println(" - " + produto.getNome() + ": " + quantidade + " unidade(s)");
+        }
+
+        System.out.println("\nDetalhamento por unidade (lote):");
+        for (Produto produto : produtosFabricados) {
+            String statusRisco = "OK";
+
+            if (produto.precisaManutencao()) {
+                statusRisco = "RISCO";
+            }
+
+            System.out.println(" - " + produto.getNome()
+                    + " | lote: " + produto.getId()
+                    + " | " + produto.getCategoria().getNomeExibicao()
+                    + " | tier: " + produto.getTipo()
+                    + " | qualidade: " + produto.getQualidade()
+                    + " | risco: " + statusRisco);
         }
     }
 
+    // Getters
+
     public double getBudget() {
         return budget;
+    }
+
+    public Cenario getCenarioAtual() {
+        return cenarioAtual;
+    }
+
+    public EstrategiaProducao getEstrategiaAtual() {
+        return estrategiaAtual;
+    }
+
+    public List<Maquina> getMaquinas() {
+        return maquinas;
     }
 
     public List<Produto> getArmazem() {
