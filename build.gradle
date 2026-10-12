@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'br.unicamp.mc322'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'Main'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // Compila para Java 17 mesmo que o JDK instalado seja mais novo (ex.: 25)
+    options.release = 17
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('charset', 'UTF-8')
+    options.windowTitle = 'Andesite Hardware Co. - Documentação'
+    options.docTitle = 'Andesite Hardware Co. - Planta Industrial'
+    // Sem esta opção o Javadoc ignora as tags @author na página gerada
+    options.author = true
+}
+
+tasks.named('run') {
+    // Necessário: sem isso o Scanner(System.in) do menu não recebe o teclado
+    standardInput = System.in
+    jvmArgs '-Dfile.encoding=UTF-8'
+}

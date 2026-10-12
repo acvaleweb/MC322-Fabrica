@@ -55,3 +55,19 @@ Também demos à fábrica a capacidade de escolher, sozinha, qual demanda atende
 primeiro — dependendo da prioridade que o usuário define, ela pode seguir a ordem de
 chegada dos pedidos, priorizar o maior lote ou tentar extrair o máximo de produção
 possível do orçamento disponível.
+
+4. O que mudou na Tarefa 4
+
+Na Tarefa 4 cuidamos da parte que ninguém vê numa fábrica funcionando: a manutenção
+do projeto e o que acontece quando algo dá errado. O projeto passou a usar o Gradle,
+então agora qualquer pessoa consegue compilar, executar e gerar a documentação com um
+único comando, sem precisar saber quais arquivos existem. Todo o código também foi
+documentado com Javadoc, explicando o que cada peça da fábrica faz e quais são as
+regras por trás dela.
+
+Também ensinamos a fábrica a lidar com problemas sem parar de funcionar. Faltou
+matéria-prima, o orçamento não deu, a demanda já foi concluída ou uma máquina quebrou:
+em vez de o programa se perder ou encerrar, a fábrica avisa o que aconteceu, deixa tudo
+como estava antes e o usuário volta ao menu para tentar outra coisa. Para que uma
+máquina quebrada não deixe a produção parada de vez, incluímos na Auditoria a opção de
+reparar as máquinas.

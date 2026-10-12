@@ -2,5 +2,9 @@
 *.class
 bin/
 
+# Gradle
+.gradle/
+build/
+
 # Configurações do VS Code
 .vscode/

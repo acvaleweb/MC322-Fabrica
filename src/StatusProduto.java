@@ -1,6 +1,0 @@
-public enum StatusProduto {
-    AGUARDANDO_PROCESSAMENTO,
-    PROCESSADO,
-    INSPECIONADO,
-    REJEITADO
-}

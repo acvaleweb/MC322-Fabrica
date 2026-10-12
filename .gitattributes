@@ -1,0 +1,7 @@
+# Normaliza finais de linha entre Windows e Linux/macOS
+* text=auto
+
+# O wrapper precisa manter o final de linha correto de cada sistema
+gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary

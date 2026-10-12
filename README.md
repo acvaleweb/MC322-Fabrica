@@ -30,7 +30,8 @@ estado de cada equipamento (ligado/desligado, em movimento/parado):
 Estoque de Matéria-Prima → Esteira → Insersora SMT → Esteira → Montadora → Esteira → Inspetora → Armazém
 ```
 
-1. O estoque de matéria-prima e o budget são verificados antes de qualquer lote começar.
+1. A demanda, a linha de produção, o estoque de matéria-prima e o budget são verificados
+   antes de qualquer lote começar. Se alguma verificação falhar, nada é alterado.
 2. A matéria-prima necessária é consumida e o custo de operação do lote é debitado do budget.
 3. A demanda muda de `PENDENTE` para `EM_PRODUCAO` (enum `StatusDemanda`).
 4. Cada unidade é transportada pela esteira até a Insersora SMT, que solda o die
@@ -56,6 +57,16 @@ probabilidade de falha e o desgaste por uso de todas as máquinas da linha,
 simulando desde uma operação tranquila até uma sob forte estresse financeiro e
 mecânico.
 
+## Tratamento de erros
+
+Os erros de regra de negócio (matéria-prima ou budget insuficientes, demanda
+inexistente ou em estado incompatível, máquina quebrada ou desligada, quantidade
+inválida) são representados por exceções que herdam de `PlantaException`. O
+`GerenciadorProducao` valida tudo antes de alterar qualquer estado, então um erro
+nunca deixa a planta parcialmente modificada. O `MenuConsole` captura essas exceções,
+mostra um bloco de erro explicando o motivo e devolve o usuário ao menu. Entradas
+inválidas (texto no lugar de número, opção inexistente) repetem a pergunta.
+
 ## Estrutura das classes
 
 | Classe / Interface / Enum | Responsabilidade |
@@ -75,12 +86,37 @@ mecânico.
 | `Cenario` | Enum dos cenários de operação (Ideal / Apocalíptico) e seus parâmetros de budget, falha e desgaste |
 | `Esteira` | Transporta um item por vez entre as etapas da linha, respeitando capacidade |
 | `GerenciadorProducao` | Contexto do Strategy; orquestra demandas, budget, matéria-prima, máquinas, cenário e o armazém de produtos fabricados |
-| `MenuConsole` | Interface via terminal, organizada em submenus: Demandas, Fabricação, Consultar, Comprar matéria-prima, Gerenciar estratégia, Auditoria |
+| `PlantaException` | Exceção base (`RuntimeException`) dos erros de regra de negócio da planta |
+| `RecursoInsuficienteException` | Falta de matéria-prima ou de budget |
+| `DemandaInvalidaException` | Demanda inexistente ou em estado incompatível com a operação |
+| `MaquinaIndisponivelException` | Máquina ou esteira quebrada, desligada, ocupada ou sem capacidade para o produto |
+| `QuantidadeInvalidaException` | Quantidade menor ou igual a zero, ou abaixo do lote mínimo |
+| `MenuConsole` | Interface via terminal, organizada em submenus: Demandas, Fabricação, Consultar, Comprar matéria-prima, Gerenciar estratégia, Auditoria (que também permite reparar as máquinas). Valida as entradas e trata as exceções |
 | `Main` | Ponto de entrada do programa |
 
 ## Como compilar e executar
 
+O projeto usa **Gradle** por meio do Gradle Wrapper, então não é preciso instalar o
+Gradle. Requer apenas **Java 17 ou superior**.
+
 ```bash
-javac -d bin $(find src -name "*.java")
-java -cp bin Main
+./gradlew build     # compila e constrói o projeto
+./gradlew run       # executa a aplicação
+./gradlew javadoc   # gera a documentação em build/docs/javadoc
+```
+
+No Windows, use `gradlew.bat` no lugar de `./gradlew`.
+
+## Estrutura do projeto
+
+```
+build.gradle
+settings.gradle
+gradle.properties
+gradlew
+gradlew.bat
+gradle/wrapper/
+README.md
+justificativa.txt
+src/main/java/   (todas as classes)
 ```
