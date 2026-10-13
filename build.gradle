@@ -32,5 +32,7 @@ tasks.withType(Javadoc).configureEach {
 tasks.named('run') {
     // Necessário: sem isso o Scanner(System.in) do menu não recebe o teclado
     standardInput = System.in
-    jvmArgs '-Dfile.encoding=UTF-8'
+    // Faz o programa escrever em UTF-8, que é como o Gradle lê a saída. Sem isso, no
+    // Windows os acentos aparecem trocados por símbolos estranhos
+    jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
 }
