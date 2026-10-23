@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,6 +19,9 @@ import java.util.List;
  *       lote, a unidade é perdida e o lote continua.</li>
  * </ul>
  *
+ * <p>As máquinas pertencem a uma {@link LinhaDeProducao} (agrupador); o gerenciador
+ * só fala com a linha e com as máquinas, nunca com as Partes internas delas.</p>
+ *
  * <p>Os erros de regra de negócio são sinalizados com subclasses de
  * {@link PlantaException}; a apresentação deles ao usuário é responsabilidade do
  * {@link MenuConsole}.</p>
@@ -28,7 +32,7 @@ public class GerenciadorProducao {
     private List<Demanda> demandas;
     private List<Produto> catalogoProdutos;
     private List<Produto> produtosFabricados;
-    private List<Maquina> maquinas;
+    private LinhaDeProducao linhaProducao;
     private MateriaPrima materiaPrima;
     private Esteira esteira;
     private Cenario cenarioAtual;
@@ -36,6 +40,7 @@ public class GerenciadorProducao {
     private double budget;
 
     private static int contadorUnidadesCriadas = 0;
+    private static final String NOME_LINHA = "Andesite SMT-01";
 
     /**
      * Cria o gerenciador da planta, sem máquinas e sem demandas. O budget inicial vem do
@@ -51,7 +56,7 @@ public class GerenciadorProducao {
             List<Produto> catalogoProdutos, EstrategiaProducao estrategiaInicial) {
         this.demandas = new ArrayList<>();
         this.produtosFabricados = new ArrayList<>();
-        this.maquinas = new ArrayList<>();
+        this.linhaProducao = new LinhaDeProducao(NOME_LINHA);
         this.materiaPrima = materiaPrima;
         this.esteira = new Esteira(capacidadeEsteira);
         this.cenarioAtual = cenario;
@@ -108,8 +113,9 @@ public class GerenciadorProducao {
      * os produtos do armazém, e o total de itens que precisam de atenção.
      */
     public void gerarAuditoriaGeral() {
+        // A linha entra como um unico Auditavel: ela propaga a auditoria para maquinas e partes
         List<Auditavel> itensAuditaveis = new ArrayList<>();
-        itensAuditaveis.addAll(maquinas);
+        itensAuditaveis.add(linhaProducao);
         itensAuditaveis.addAll(produtosFabricados);
 
         System.out.println("\n==================================================");
@@ -123,14 +129,14 @@ public class GerenciadorProducao {
 
         int itensEmRisco = 0;
         for (Auditavel item : itensAuditaveis) {
-            System.out.println(" - " + item.gerarRelatorioDiagnostico());
+            System.out.println(" - " + item.gerarRelatorioDiagnostico().replace("\n", "\n   "));
             if (item.precisaManutencao()) {
                 itensEmRisco++;
             }
         }
 
         System.out.println("--------------------------------------------------");
-        System.out.println("Total auditado: " + itensAuditaveis.size()
+        System.out.println("Total auditado (linha + produtos): " + itensAuditaveis.size()
                 + " | itens que precisam de atencao: " + itensEmRisco);
         System.out.println("==================================================");
     }
@@ -166,7 +172,32 @@ public class GerenciadorProducao {
 
         maquina.setProbabilidadeFalha(maquina.getProbabilidadeFalha() * cenarioAtual.getFatorProbabilidadeFalha());
         maquina.setDesgastePorUso(cenarioAtual.getDesgasteMinimoPorUso(), cenarioAtual.getDesgasteMaximoPorUso());
-        maquinas.add(maquina);
+        linhaProducao.adicionarMaquina(maquina);
+    }
+
+    /**
+     * Imprime o relatório estrutural da linha: Linha, Máquinas e Partes, indentado.
+     */
+    public void gerarAuditoriaEstrutural() {
+        System.out.println(linhaProducao.gerarRelatorioDiagnostico());
+    }
+
+    /**
+     * Retorna o nome da linha de produção.
+     *
+     * @return nome da linha
+     */
+    public String getNomeLinha() {
+        return linhaProducao.getNome();
+    }
+
+    /**
+     * Retorna o custo de operação da linha para produzir uma unidade.
+     *
+     * @return custo por unidade, em reais
+     */
+    public double getCustoOperacaoPorUnidade() {
+        return linhaProducao.calcularCustoOperacaoPorUnidade();
     }
 
     // Repara (restaura a saude) as maquinas que precisam de manutencao, isto e,
@@ -177,15 +208,7 @@ public class GerenciadorProducao {
      * @return quantas máquinas foram reparadas (zero se nenhuma precisava)
      */
     public int repararMaquinas() {
-        int reparadas = 0;
-
-        for (Maquina maquina : maquinas) {
-            if (maquina.precisaManutencao()) {
-                maquina.reparar();
-                reparadas++;
-            }
-        }
-        return reparadas;
+        return linhaProducao.repararMaquinas();
     }
 
     /**
@@ -303,7 +326,7 @@ public class GerenciadorProducao {
     }
 
     private void validarLinhaDisponivel(Produto molde) {
-        if (maquinas.isEmpty()) {
+        if (linhaProducao.estaVazia()) {
             throw new MaquinaIndisponivelException("Nenhuma máquina cadastrada na linha de produção");
         }
 
@@ -313,7 +336,7 @@ public class GerenciadorProducao {
                     + esteira.getCapacidadeMaxima() + " kg)");
         }
 
-        for (Maquina maquina : maquinas) {
+        for (Maquina maquina : linhaProducao.getMaquinas()) {
             if (maquina.estaQuebrada()) {
                 throw new MaquinaIndisponivelException("A " + maquina.getNome()
                         + " está quebrada e precisa de reparo antes de iniciar a produção."
@@ -463,7 +486,7 @@ public class GerenciadorProducao {
     // que maquina e esteira terminem desligadas mesmo quando ha erro
     private void processarNasMaquinas(Produto produto) {
         try {
-            for (Maquina maquina : maquinas) {
+            for (Maquina maquina : linhaProducao.getMaquinas()) {
                 System.out.println("Checando estado da esteira...");
                 pausar(100);
 
@@ -526,12 +549,7 @@ public class GerenciadorProducao {
     // para converter o budget em "unidades que cabem no orcamento" na hora de
     // escolher a proxima demanda (calcularOrcamentoEmUnidades)
     private double calcularCustoOperacaoPorUnidade() {
-        double custoPorUnidade = 0;
-
-        for (Maquina maquina : maquinas) {
-            custoPorUnidade += maquina.getCustoOperacao();
-        }
-        return custoPorUnidade;
+        return linhaProducao.calcularCustoOperacaoPorUnidade();
     }
 
     private double calcularCustoProducao(int quantidadeUnidades) {
@@ -662,39 +680,39 @@ public class GerenciadorProducao {
     }
 
     /**
-     * Retorna as máquinas da linha, na ordem de processamento.
+     * Retorna as máquinas da linha, na ordem de processamento, em uma lista imutável.
      *
-     * @return lista de máquinas
+     * @return lista imutável de máquinas
      */
     public List<Maquina> getMaquinas() {
-        return maquinas;
+        return linhaProducao.getMaquinas();
     }
 
     /**
      * Retorna os produtos acabados e aprovados que estão no armazém.
      *
-     * @return lista de produtos do armazém
+     * @return lista imutável de produtos do armazém
      */
     public List<Produto> getArmazem() {
-        return produtosFabricados;
+        return Collections.unmodifiableList(produtosFabricados);
     }
 
     /**
      * Retorna todas as demandas registradas.
      *
-     * @return lista de demandas
+     * @return lista imutável de demandas
      */
     public List<Demanda> getDemandas() {
-        return demandas;
+        return Collections.unmodifiableList(demandas);
     }
 
     /**
      * Retorna o catálogo de produtos que a fábrica sabe fabricar.
      *
-     * @return lista de produtos do catálogo
+     * @return lista imutável de produtos do catálogo
      */
     public List<Produto> getCatalogoProdutos() {
-        return catalogoProdutos;
+        return Collections.unmodifiableList(catalogoProdutos);
     }
 
     /**

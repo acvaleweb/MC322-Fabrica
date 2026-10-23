@@ -57,6 +57,25 @@ probabilidade de falha e o desgaste por uso de todas as máquinas da linha,
 simulando desde uma operação tranquila até uma sob forte estresse financeiro e
 mecânico.
 
+## Composição das máquinas (Tarefa 5)
+
+Cada `Maquina` (o Todo) é composta por Partes que ela mesma cria no construtor
+(composição estrita, sem receber Partes de fora): um `MotorDeAcionamento` (1:1), um
+`SensorDeCalibracao` (1:1) e uma `List` de `AtuadorPneumatico` (1:N). Os construtores das
+Partes são visíveis só no pacote e nenhuma Parte é exposta: o restante do sistema usa
+métodos de delegação da máquina (`lerTemperaturaMotor()`, `lerCalibracaoSensor()`,
+`contarAtuadoresOperacionais()`), seguindo a Lei de Deméter.
+
+As máquinas ficam em uma `LinhaDeProducao` (o Agrupador). Essa relação é uma **agregação**:
+a máquina é criada fora da linha e pode ser retirada e colocada em outra, então não depende
+dela. `getMaquinas()` devolve uma lista imutável (`Collections.unmodifiableList`), assim
+como os getters de coleção do `GerenciadorProducao`.
+
+As Partes afetam a máquina: motor superaquecido (+10%), sensor descalibrado (+10%) e cada
+atuador quebrado (+5%) somam à probabilidade de falha efetiva. A auditoria desce em
+cascata (Linha > Máquina > Partes) e aparece indentada no terminal. O diagrama UML está em
+`docs/uml-tarefa5.png` (fonte editável em `docs/uml-tarefa5.dot`).
+
 ## Tratamento de erros
 
 Os erros de regra de negócio (matéria-prima ou budget insuficientes, demanda
@@ -84,6 +103,8 @@ inválidas (texto no lugar de número, opção inexistente) repetem a pergunta.
 | `EstrategiaProducao` | Interface do padrão Strategy: seleciona a próxima demanda a ser atendida |
 | `EstrategiaFilaDaFundicao`, `EstrategiaMaiorLote`, `EstrategiaMaximoRendimento` | Implementações concretas de `EstrategiaProducao` |
 | `Cenario` | Enum dos cenários de operação (Ideal / Apocalíptico) e seus parâmetros de budget, falha e desgaste |
+| `LinhaDeProducao` | Agrupador (agregação) das máquinas; lista imutável, auditoria em cascata e reparo |
+| `MotorDeAcionamento`, `SensorDeCalibracao`, `AtuadorPneumatico` | Partes internas de `Maquina` (composição 1:1, 1:1 e 1:N); implementam `Auditavel` |
 | `Esteira` | Transporta um item por vez entre as etapas da linha, respeitando capacidade |
 | `GerenciadorProducao` | Contexto do Strategy; orquestra demandas, budget, matéria-prima, máquinas, cenário e o armazém de produtos fabricados |
 | `PlantaException` | Exceção base (`RuntimeException`) dos erros de regra de negócio da planta |
@@ -118,5 +139,6 @@ gradlew.bat
 gradle/wrapper/
 README.md
 justificativa.txt
+docs/            (diagrama UML da Tarefa 5)
 src/main/java/   (todas as classes)
 ```

@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -16,6 +19,12 @@ import java.util.Random;
  *       a probabilidade base chega a dobrar, limitada a 95% (ver
  *       {@link #calcularProbabilidadeFalhaEfetiva()}).</li>
  * </ul>
+ *
+ * <p><b>Composição:</b> a máquina é o Todo e cria, no próprio construtor, as suas Partes:
+ * um {@link MotorDeAcionamento} (1:1), um {@link SensorDeCalibracao} (1:1) e vários
+ * {@link AtuadorPneumatico} (1:N). As Partes nunca saem da máquina: o código externo só
+ * usa métodos de delegação como {@link #lerTemperaturaMotor()}. Motor superaquecido,
+ * sensor descalibrado e atuadores quebrados aumentam a probabilidade de falha efetiva.</p>
  *
  * <p>As subclasses definem o que cada etapa faz com o produto em
  * {@link #processar(Produto)}.</p>
@@ -40,8 +49,21 @@ public abstract class Maquina implements Auditavel {
     private double desgasteMinimoPorUso;
     private double desgasteMaximoPorUso;
 
+    // Partes da composicao: criadas aqui dentro e nunca expostas
+    private final MotorDeAcionamento motor;
+    private final SensorDeCalibracao sensor;
+    private final List<AtuadorPneumatico> atuadores;
+
     private static final double SAUDE_MAXIMA = 100.0;
     private static final double SAUDE_MINIMA = 0.0;
+    private static final int QUANTIDADE_ATUADORES_PADRAO = 2;
+    private static final double AQUECIMENTO_BASE = 5.0;
+    private static final double FATOR_AQUECIMENTO = 3.0;
+    private static final double RESFRIAMENTO_AO_DESLIGAR = 5.0;
+    private static final double PENALIDADE_MOTOR_SUPERAQUECIDO = 0.10;
+    private static final double PENALIDADE_SENSOR_DESCALIBRADO = 0.10;
+    private static final double PENALIDADE_ATUADOR_QUEBRADO = 0.05;
+    private static final String RECUO_PARTES = "  > ";
 
     /**
      * Cria uma máquina desligada, com saúde máxima, limiar de manutenção 30 e desgaste
@@ -53,6 +75,34 @@ public abstract class Maquina implements Auditavel {
      * @param custoOperacao      custo, em reais, de operar a máquina para uma unidade
      */
     public Maquina(String nome, double capacidadeMaxima, double probabilidadeFalha, double custoOperacao) {
+        this(nome, capacidadeMaxima, probabilidadeFalha, custoOperacao, QUANTIDADE_ATUADORES_PADRAO);
+    }
+
+    /**
+     * Cria uma máquina com um número específico de atuadores. É aqui, na fase de
+     * construção, que o Todo instancia todas as suas Partes (composição estrita): nenhuma
+     * Parte vem de fora.
+     *
+     * @param nome                  nome de identificação da máquina
+     * @param capacidadeMaxima      maior massa de produto, em kg, que a máquina suporta
+     * @param probabilidadeFalha    probabilidade base de falha, entre 0 e 1
+     * @param custoOperacao         custo, em reais, de operar a máquina para uma unidade
+     * @param quantidadeAtuadores   quantos atuadores a máquina terá (pelo menos 1)
+     * @throws IllegalArgumentException se a quantidade de atuadores for menor que 1
+     */
+    public Maquina(String nome, double capacidadeMaxima, double probabilidadeFalha, double custoOperacao,
+            int quantidadeAtuadores) {
+        if (quantidadeAtuadores < 1) {
+            throw new IllegalArgumentException("A máquina precisa de pelo menos 1 atuador");
+        }
+
+        this.motor = new MotorDeAcionamento();
+        this.sensor = new SensorDeCalibracao();
+        this.atuadores = new ArrayList<>();
+        for (int i = 1; i <= quantidadeAtuadores; i++) {
+            this.atuadores.add(new AtuadorPneumatico(i));
+        }
+
         this.nome = nome;
         this.capacidadeMaxima = capacidadeMaxima;
         this.probabilidadeFalha = probabilidadeFalha;
@@ -96,6 +146,9 @@ public abstract class Maquina implements Auditavel {
      * Desliga a máquina.
      */
     public void desligar() {
+        if (ligada) {
+            motor.resfriar(RESFRIAMENTO_AO_DESLIGAR);
+        }
         this.ligada = false;
     }
 
@@ -105,19 +158,35 @@ public abstract class Maquina implements Auditavel {
      * nunca fica abaixo de zero.
      */
     public void desgastar() {
-        double perda = desgasteMinimoPorUso + random.nextDouble() * (desgasteMaximoPorUso - desgasteMinimoPorUso);
+        double perda = sortearPerda();
         saude -= perda;
+
+        // O desgaste se propaga para as Partes
+        motor.aquecer(AQUECIMENTO_BASE + perda * FATOR_AQUECIMENTO);
+        sensor.desgastar(sortearPerda());
+        for (AtuadorPneumatico atuador : atuadores) {
+            atuador.desgastar(sortearPerda());
+        }
 
         if (saude < SAUDE_MINIMA) {
             saude = SAUDE_MINIMA;
         }
     }
 
+    private double sortearPerda() {
+        return desgasteMinimoPorUso + random.nextDouble() * (desgasteMaximoPorUso - desgasteMinimoPorUso);
+    }
+
     /**
-     * Repara a máquina, restaurando a saúde ao máximo (100).
+     * Repara a máquina, restaurando a saúde ao máximo (100) e reparando todas as Partes.
      */
     public void reparar() {
         saude = SAUDE_MAXIMA;
+        motor.reparar();
+        sensor.recalibrar();
+        for (AtuadorPneumatico atuador : atuadores) {
+            atuador.reparar();
+        }
     }
 
     /**
@@ -130,19 +199,28 @@ public abstract class Maquina implements Auditavel {
     }
 
     /**
-     * Informa se a saúde está abaixo do limiar de manutenção. Uma máquina quebrada
-     * também precisa de manutenção.
+     * Informa se a máquina precisa de manutenção: saúde abaixo do limiar (uma máquina
+     * quebrada também entra aqui) ou alguma Parte precisando de manutenção.
      *
      * @return {@code true} se a máquina precisa de manutenção
      */
     @Override
     public boolean precisaManutencao() {
-        return saude < limiarManutencao;
+        if (saude < limiarManutencao || motor.precisaManutencao() || sensor.precisaManutencao()) {
+            return true;
+        }
+        for (AtuadorPneumatico atuador : atuadores) {
+            if (atuador.precisaManutencao()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Gera o diagnóstico da máquina em uma linha: tipo, nome, saúde, probabilidade de
-     * falha efetiva e situação ("OK", "MANUTENCAO NECESSARIA" ou "QUEBRADA").
+     * Gera o diagnóstico da máquina: uma linha com tipo, nome, saúde, probabilidade de
+     * falha efetiva e situação ("OK", "MANUTENCAO NECESSARIA" ou "QUEBRADA"), seguida de
+     * uma linha indentada com o diagnóstico de cada Parte (auditoria em cascata).
      *
      * @return o texto do diagnóstico
      */
@@ -159,19 +237,95 @@ public abstract class Maquina implements Auditavel {
         return getTipo() + " " + nome
                 + " | saude: " + String.format("%.0f", saude)
                 + " | falha efetiva: " + String.format("%.0f%%", calcularProbabilidadeFalhaEfetiva() * 100)
-                + " | " + risco;
+                + " | " + risco
+                + "\n" + RECUO_PARTES + gerarRelatorioPartes();
+    }
+
+    // Monta o trecho das Partes, ex.: Motor: OK (25C) | Sensor: OK (100%) | Atuador 1: OK (100%)
+    private String gerarRelatorioPartes() {
+        StringBuilder partes = new StringBuilder();
+        partes.append(motor.gerarRelatorioDiagnostico());
+        partes.append(" | ").append(sensor.gerarRelatorioDiagnostico());
+        for (AtuadorPneumatico atuador : atuadores) {
+            partes.append(" | ").append(atuador.gerarRelatorioDiagnostico());
+        }
+        return partes.toString();
+    }
+
+    // Cada Parte com problema aumenta a chance de falha da maquina (a Parte nao sabe disso)
+    private double calcularPenalidadePartes() {
+        double penalidade = 0;
+        if (motor.estaSuperaquecido()) {
+            penalidade += PENALIDADE_MOTOR_SUPERAQUECIDO;
+        }
+        if (sensor.estaDescalibrado()) {
+            penalidade += PENALIDADE_SENSOR_DESCALIBRADO;
+        }
+        for (AtuadorPneumatico atuador : atuadores) {
+            if (atuador.estaQuebrado()) {
+                penalidade += PENALIDADE_ATUADOR_QUEBRADO;
+            }
+        }
+        return penalidade;
+    }
+
+    // ----- Metodos de delegacao (Lei de Demeter): o cliente fala so com a maquina -----
+
+    /**
+     * Lê a temperatura do motor interno.
+     *
+     * @return temperatura, em °C
+     */
+    public double lerTemperaturaMotor() {
+        return motor.getTemperatura();
     }
 
     /**
-     * Calcula a probabilidade de falha considerando o desgaste. Quanto menor a saúde,
-     * maior a chance de falha: com saúde 0 a probabilidade base chega a dobrar. O
-     * resultado é limitado a 0,95 para que a falha nunca seja garantida.
+     * Lê a calibração do sensor interno.
+     *
+     * @return calibração, de 0 a 100
+     */
+    public double lerCalibracaoSensor() {
+        return sensor.getCalibracao();
+    }
+
+    /**
+     * Retorna quantos atuadores a máquina tem.
+     *
+     * @return quantidade de atuadores
+     */
+    public int getQuantidadeAtuadores() {
+        return atuadores.size();
+    }
+
+    /**
+     * Conta quantos atuadores ainda não quebraram.
+     *
+     * @return quantidade de atuadores operacionais
+     */
+    public int contarAtuadoresOperacionais() {
+        int operacionais = 0;
+        for (AtuadorPneumatico atuador : atuadores) {
+            if (!atuador.estaQuebrado()) {
+                operacionais++;
+            }
+        }
+        return operacionais;
+    }
+
+    /**
+     * Calcula a probabilidade de falha considerando o desgaste e o estado das Partes.
+     * Quanto menor a saúde, maior a chance de falha: com saúde 0 a probabilidade base
+     * chega a dobrar. Motor superaquecido (+0,10), sensor descalibrado (+0,10) e cada
+     * atuador quebrado (+0,05) somam à probabilidade. O resultado é limitado a 0,95 para
+     * que a falha nunca seja garantida.
      *
      * @return a probabilidade de falha efetiva, entre 0 e 0,95
      */
     protected double calcularProbabilidadeFalhaEfetiva() {
         double fatorDesgaste = (SAUDE_MAXIMA - saude) / SAUDE_MAXIMA;
-        double probabilidadeEfetiva = probabilidadeFalha + probabilidadeFalha * fatorDesgaste;
+        double probabilidadeEfetiva = probabilidadeFalha + probabilidadeFalha * fatorDesgaste
+                + calcularPenalidadePartes();
 
         if (probabilidadeEfetiva > 0.95) {
             return 0.95;

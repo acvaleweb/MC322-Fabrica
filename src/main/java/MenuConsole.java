@@ -297,6 +297,7 @@ public class MenuConsole {
         System.out.println(" [4] - Comprar matéria-prima");
         System.out.println(" [5] - Gerenciar estratégia de produção");
         System.out.println(" [6] - Auditoria");
+        System.out.println(" [7] - Linha de produção (máquinas e partes)");
         System.out.println();
         System.out.println(" [0] - SAIR");
         linhaFina();
@@ -558,6 +559,7 @@ public class MenuConsole {
             System.out.println(" [2] - Detalhar maquinas");
             System.out.println(" [3] - Detalhar produtos no armazem");
             System.out.println(" [4] - Reparar maquinas");
+            System.out.println(" [5] - Auditoria estrutural (linha > maquina > partes)");
             System.out.println(" [0] - Voltar ao menu principal");
             linhaFina();
 
@@ -576,12 +578,83 @@ public class MenuConsole {
                 case "4":
                     repararMaquinas();
                     break;
+                case "5":
+                    exibirAuditoriaEstrutural();
+                    break;
                 case "0":
                     return;
                 default:
                     erro("Opção inválida. Escolha um número do menu");
             }
         }
+    }
+
+    private void exibirAuditoriaEstrutural() {
+        cabecalho("AUDITORIA ESTRUTURAL");
+        gerenciador.gerarAuditoriaEstrutural();
+        linhaFina();
+    }
+
+    // ======================================================
+    // Submenu: Linha de produção (agrupador, máquinas e partes)
+    // ======================================================
+
+    private void iniciarMenuLinha() {
+        while (true) {
+            cabecalho("LINHA DE PRODUÇÃO");
+            System.out.println(" [1] - Ver máquinas da linha");
+            System.out.println(" [2] - Ler partes internas (motor, sensor, atuadores)");
+            System.out.println(" [3] - Auditoria estrutural detalhada");
+            System.out.println(" [4] - Reparar máquinas");
+            System.out.println(" [0] - Voltar ao menu principal");
+            linhaFina();
+
+            String opcao = lerEntrada();
+
+            switch (opcao) {
+                case "1":
+                    exibirMaquinasDaLinha();
+                    break;
+                case "2":
+                    exibirLeituraDasPartes();
+                    break;
+                case "3":
+                    exibirAuditoriaEstrutural();
+                    break;
+                case "4":
+                    repararMaquinas();
+                    break;
+                case "0":
+                    return;
+                default:
+                    erro("Opção inválida. Escolha um número do menu");
+            }
+        }
+    }
+
+    private void exibirMaquinasDaLinha() {
+        cabecalho("LINHA " + gerenciador.getNomeLinha().toUpperCase());
+        int posicao = 1;
+        for (Maquina maquina : gerenciador.getMaquinas()) {
+            System.out.println(" " + posicao + ". " + maquina.getTipo() + " " + maquina.getNome()
+                    + " | custo: R$" + String.format("%.2f", maquina.getCustoOperacao()));
+            posicao++;
+        }
+        info("Custo de operação por unidade: R$" + String.format("%.2f", gerenciador.getCustoOperacaoPorUnidade()));
+        linhaFina();
+    }
+
+    // Usa so os metodos de delegacao da Maquina: o menu nunca enxerga as partes
+    private void exibirLeituraDasPartes() {
+        cabecalho("LEITURA DAS PARTES INTERNAS");
+        for (Maquina maquina : gerenciador.getMaquinas()) {
+            System.out.println(" - " + maquina.getNome());
+            System.out.println("     Motor: " + String.format("%.0f", maquina.lerTemperaturaMotor()) + " °C");
+            System.out.println("     Sensor: calibração " + String.format("%.0f", maquina.lerCalibracaoSensor()) + "%");
+            System.out.println("     Atuadores operacionais: " + maquina.contarAtuadoresOperacionais()
+                    + "/" + maquina.getQuantidadeAtuadores());
+        }
+        linhaFina();
     }
 
     private void exibirDetalheMaquinas() {
@@ -678,6 +751,9 @@ public class MenuConsole {
                 break;
             case "6":
                 iniciarMenuAuditoria();
+                break;
+            case "7":
+                iniciarMenuLinha();
                 break;
             default:
                 erro("Opção inválida. Escolha um número do menu");

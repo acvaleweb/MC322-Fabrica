@@ -71,3 +71,19 @@ em vez de o programa se perder ou encerrar, a fábrica avisa o que aconteceu, de
 como estava antes e o usuário volta ao menu para tentar outra coisa. Para que uma
 máquina quebrada não deixe a produção parada de vez, incluímos na Auditoria a opção de
 reparar as máquinas.
+
+5. O que mudou na Tarefa 5
+
+Na Tarefa 5 paramos de tratar a máquina como uma peça única. Agora cada máquina da
+fábrica é montada por dentro: tem um motor, um sensor de calibração e alguns atuadores
+pneumáticos, que a própria máquina cria quando nasce. As partes têm vida própria (o
+motor esquenta, o sensor perde calibração, o atuador quebra) e, quando estão ruins, a
+máquina falha mais, o que acaba derrubando a qualidade do que sai da linha.
+
+As máquinas agora vivem em uma Linha de Produção. Escolhemos agregação para essa
+relação, porque uma máquina poderia sair de uma linha e ir para outra; já motor, sensor
+e atuadores só existem dentro da máquina (composição). O resto do sistema só conversa com
+a máquina, nunca com as peças internas, e a auditoria passou a mostrar a fábrica inteira
+em cascata: linha, máquinas e peças. Também ganhamos um menu novo para a linha de
+produção e o diagrama UML em docs/.
+

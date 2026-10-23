@@ -1,0 +1,41 @@
+digraph UML {
+  rankdir=TB; nodesep=0.7; ranksep=0.9;
+  node [shape=record, fontname="Helvetica", fontsize=10, style=filled, fillcolor="#fdfdf5"];
+  edge [fontname="Helvetica", fontsize=10];
+
+  Auditavel [label="{«interface»\nAuditavel|+ gerarRelatorioDiagnostico() : String\l+ precisaManutencao() : boolean\l}", fillcolor="#eef4ff"];
+
+  Linha [label="{LinhaDeProducao|- nome : String\l- maquinas : List\<Maquina\>\l|+ adicionarMaquina(Maquina)\l+ removerMaquina(Maquina) : boolean\l+ getMaquinas() : List\<Maquina\> (imutável)\l+ repararMaquinas() : int\l+ gerarRelatorioDiagnostico() : String\l}"];
+
+  Maquina [label="{«abstract»\nMaquina|- saude : double\l- motor : MotorDeAcionamento\l- sensor : SensorDeCalibracao\l- atuadores : List\<AtuadorPneumatico\>\l|+ processar(Produto)\l+ desgastar()\l+ reparar()\l+ lerTemperaturaMotor() : double\l+ lerCalibracaoSensor() : double\l+ contarAtuadoresOperacionais() : int\l+ gerarRelatorioDiagnostico() : String\l}"];
+
+  Insersora [label="{InsersoraSMT}"];
+  Montadora [label="{Montadora}"];
+  Inspetora [label="{Inspetora}"];
+
+  Motor [label="{MotorDeAcionamento|- temperatura : double\l|~ aquecer(double)\l~ resfriar(double)\l+ estaSuperaquecido() : boolean\l+ gerarRelatorioDiagnostico() : String\l}"];
+  Sensor [label="{SensorDeCalibracao|- calibracao : double\l|~ desgastar(double)\l+ estaDescalibrado() : boolean\l+ gerarRelatorioDiagnostico() : String\l}"];
+  Atuador [label="{AtuadorPneumatico|- numero : int\l- integridade : double\l|~ desgastar(double)\l+ estaQuebrado() : boolean\l+ gerarRelatorioDiagnostico() : String\l}"];
+
+  // Agregacao (losango vazio): maquinas existem independentes da linha
+  Linha -> Maquina [dir=back, arrowtail=odiamond, arrowhead=none, taillabel="1", headlabel="1..*", labeldistance=2.2, label="agrega"];
+  // Composicao (losango cheio)
+  Maquina -> Motor [dir=back, arrowtail=diamond, arrowhead=none, taillabel="1", headlabel="1", labeldistance=2.2, label="compõe"];
+  Maquina -> Sensor [dir=back, arrowtail=diamond, arrowhead=none, taillabel="1", headlabel="1", labeldistance=2.2, label="compõe"];
+  Maquina -> Atuador [dir=back, arrowtail=diamond, arrowhead=none, taillabel="1", headlabel="1..*", labeldistance=2.2, label="compõe"];
+
+  // Heranca
+  Insersora -> Maquina [arrowhead=empty];
+  Montadora -> Maquina [arrowhead=empty];
+  Inspetora -> Maquina [arrowhead=empty];
+
+  // Realizacao
+  Linha -> Auditavel [style=dashed, arrowhead=empty];
+  Maquina -> Auditavel [style=dashed, arrowhead=empty];
+  Motor -> Auditavel [style=dashed, arrowhead=empty];
+  Sensor -> Auditavel [style=dashed, arrowhead=empty];
+  Atuador -> Auditavel [style=dashed, arrowhead=empty];
+
+  {rank=same; Insersora; Montadora; Inspetora}
+  {rank=same; Motor; Sensor; Atuador}
+}
