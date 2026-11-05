@@ -8,3 +8,6 @@ build/
 
 # Configurações do VS Code
 .vscode/
+
+# Estado da planta salvo pela aplicação (gerado ao executar, não faz parte do código)
+dados/

@@ -10,8 +10,16 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    // O BOM do JUnit fixa a mesma versao para todos os modulos do JUnit 5
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // O Gradle 9 exige o launcher do JUnit Platform no classpath de execucao dos testes
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
 application {
-    mainClass = 'Main'
+    mainClass = 'br.unicamp.ic.mc322.Main'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -35,4 +43,21 @@ tasks.named('run') {
     // Faz o programa escrever em UTF-8, que é como o Gradle lê a saída. Sem isso, no
     // Windows os acentos aparecem trocados por símbolos estranhos
     jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
+}
+
+tasks.named('test') {
+    // Diz ao Gradle para descobrir e executar os testes escritos com JUnit 5
+    useJUnitPlatform()
+    // Os testes nunca leem o teclado nem usam os arquivos reais da aplicacao
+    jvmArgs '-Dfile.encoding=UTF-8'
+    testLogging {
+        // Mostra no terminal quais testes passaram, falharam ou foram ignorados
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+        showStandardStreams = false
+    }
+    // Relatorio HTML em build/reports/tests/test/index.html
+    reports {
+        html.required = true
+    }
 }

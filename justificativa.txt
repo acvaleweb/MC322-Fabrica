@@ -87,3 +87,28 @@ a máquina, nunca com as peças internas, e a auditoria passou a mostrar a fábr
 em cascata: linha, máquinas e peças. Também ganhamos um menu novo para a linha de
 produção e o diagrama UML em docs/.
 
+6. O que mudou na Tarefa 6
+
+Na Tarefa 6 a fábrica ganhou memória. Antes, tudo que acontecia numa execução se perdia
+quando o programa fechava: o estoque, o budget, o desgaste das máquinas, as demandas e o que
+já tinha sido produzido. Agora o estado da planta pode ser salvo em um arquivo XML e
+recuperado na próxima vez. No menu há as opções de salvar e de carregar, e ao sair o
+programa pergunta se o estado deve ser guardado. Na primeira execução, sem nenhum arquivo,
+a fábrica simplesmente começa uma planta nova. Se o arquivo estiver vazio, corrompido ou com
+valores que não fazem sentido, a fábrica avisa o que está errado e deixa a pessoa escolher
+entre começar do zero ou sair para consertar, sem apagar nada por conta própria.
+
+Cuidamos para que salvar e carregar nunca deixem a fábrica pior do que estava: o salvamento
+é feito de forma que um erro no meio do caminho não estraga o arquivo anterior, e o
+carregamento só troca a planta em uso depois de conferir o arquivo inteiro. Para isso, as
+máquinas passaram a entregar e receber o seu estado por um retrato (EstadoMaquina), sem
+expor as peças internas, mantendo a composição da Tarefa 5. Decidimos o que guardar e o que
+não guardar (o catálogo de produtos, por exemplo, é configuração da aplicação e não é
+salvo), e explicamos cada escolha no README.
+
+Também organizamos o código em pacotes (model, service, strategy, persistence, exception e
+ui), o que deixou claro quem depende de quem: o domínio não sabe que arquivos existem. Por
+fim, criamos uma suíte de testes automatizados com JUnit 5, que confere as regras da
+fábrica, os erros de negócio e a persistência (salvar, carregar, arquivo ausente, vazio e
+corrompido), e roda junto com o ./gradlew build.
+
