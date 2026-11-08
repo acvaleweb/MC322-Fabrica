@@ -90,8 +90,10 @@ inválidas (texto no lugar de número, opção inexistente) repetem a pergunta.
 
 O estado da planta é salvo e carregado em um arquivo XML, por padrão `dados/planta.xml`
 (relativo à pasta onde o programa roda). No menu principal, `[8] Salvar estado da planta`
-grava o arquivo e `[9] Carregar estado da planta` o lê de volta. Ao sair, o programa
-pergunta se o estado deve ser salvo.
+grava o arquivo e `[9] Carregar estado da planta` o lê de volta. `[10] Reiniciar planta`
+volta a planta ao estado inicial (pede o cenário de novo) e só altera a memória: o arquivo
+salvo só muda se o usuário salvar depois. Ao sair, o programa pergunta se o estado deve ser
+salvo.
 
 Ao iniciar, a aplicação procura o arquivo:
 
