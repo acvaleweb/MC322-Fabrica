@@ -29,28 +29,40 @@ import java.util.Scanner;
  * Interface de terminal da planta: exibe os menus, lê as opções do usuário e
  * apresenta os resultados e os erros.
  *
- * <p>Esta classe é a <b>fronteira de tratamento de erros</b> da aplicação:</p>
+ * <p>
+ * Esta classe é a <b>fronteira de tratamento de erros</b> da aplicação:
+ * </p>
  * <ul>
- *   <li>entradas inválidas (texto no lugar de número, opção inexistente) repetem a
- *       pergunta com uma mensagem curta;</li>
- *   <li>erros de regra de negócio ({@link PlantaException}) aparecem em um bloco
- *       "ERRO" que aguarda o usuário pressionar ENTER, sem encerrar o programa;</li>
- *   <li>o fim da entrada de teclado (Ctrl+D ou Ctrl+Z) encerra o programa de forma
- *       limpa, sem salvar, pois não há como perguntar ao usuário.</li>
+ * <li>entradas inválidas (texto no lugar de número, opção inexistente) repetem
+ * a
+ * pergunta com uma mensagem curta;</li>
+ * <li>erros de regra de negócio ({@link PlantaException}) aparecem em um bloco
+ * "ERRO" que aguarda o usuário pressionar ENTER, sem encerrar o programa;</li>
+ * <li>o fim da entrada de teclado (Ctrl+D ou Ctrl+Z) encerra o programa de
+ * forma
+ * limpa, sem salvar, pois não há como perguntar ao usuário.</li>
  * </ul>
  *
- * <p>Persistência: o menu usa uma {@link PersistenciaPlanta} para salvar e carregar o
- * estado da planta, e só decide <i>quando</i> fazê-lo:</p>
+ * <p>
+ * Persistência: o menu usa uma {@link PersistenciaPlanta} para salvar e
+ * carregar o
+ * estado da planta, e só decide <i>quando</i> fazê-lo:
+ * </p>
  * <ul>
- *   <li><b>ao iniciar</b>, tenta carregar o estado salvo; se o arquivo não existe (primeira
- *       execução), isso é normal e uma planta nova é montada com os dados padrão. Se o
- *       arquivo existe mas está com problema, o erro é mostrado e o usuário escolhe entre
- *       iniciar uma planta nova ou sair para corrigir o arquivo, que nunca é apagado
- *       automaticamente;</li>
- *   <li><b>ao carregar pelo menu</b>, a planta atual só é trocada depois que o arquivo
- *       inteiro foi lido e validado; se qualquer coisa falhar, a planta atual continua
- *       como estava;</li>
- *   <li><b>ao sair</b>, pergunta se o usuário quer salvar.</li>
+ * <li><b>ao iniciar</b>, tenta carregar o estado salvo; se o arquivo não existe
+ * (primeira
+ * execução), isso é normal e uma planta nova é montada com os dados padrão. Se
+ * o
+ * arquivo existe mas está com problema, o erro é mostrado e o usuário escolhe
+ * entre
+ * iniciar uma planta nova ou sair para corrigir o arquivo, que nunca é apagado
+ * automaticamente;</li>
+ * <li><b>ao carregar pelo menu</b>, a planta atual só é trocada depois que o
+ * arquivo
+ * inteiro foi lido e validado; se qualquer coisa falhar, a planta atual
+ * continua
+ * como estava;</li>
+ * <li><b>ao sair</b>, pergunta se o usuário quer salvar.</li>
  * </ul>
  *
  * @author Equipe Andesite Hardware Co.
@@ -113,7 +125,8 @@ public class MenuConsole {
         catalogo.add(new ComponenteFlagship("PROD-MB-003", "Granite G9000", CategoriaProduto.PLACA_MAE, 4, 1.2));
     }
 
-    // Estoque de uma planta nova. Cada planta tem o seu: uma planta carregada de arquivo
+    // Estoque de uma planta nova. Cada planta tem o seu: uma planta carregada de
+    // arquivo
     // traz o estoque salvo, por isso o menu nao guarda um estoque fixo em um campo
     private MateriaPrima criarEstoqueInicial() {
         return new MateriaPrima(
@@ -181,7 +194,8 @@ public class MenuConsole {
         System.out.println("       " + mensagem);
     }
 
-    // Quebra o texto em linhas de no maximo "largura" caracteres, sem cortar palavras
+    // Quebra o texto em linhas de no maximo "largura" caracteres, sem cortar
+    // palavras
     private List<String> quebrarLinhas(String texto, int largura) {
         List<String> linhas = new ArrayList<>();
         StringBuilder atual = new StringBuilder();
@@ -210,7 +224,8 @@ public class MenuConsole {
         exibirErro(acao, e, "Nenhuma alteração foi realizada na planta.");
     }
 
-    // O rodape diz ao usuario o que continua intacto, que depende da acao que falhou
+    // O rodape diz ao usuario o que continua intacto, que depende da acao que
+    // falhou
     private void exibirErro(String acao, PlantaException e, String rodape) {
         String linhaErro = repetir("=", LARGURA_BLOCO_ERRO);
 
@@ -362,6 +377,7 @@ public class MenuConsole {
         System.out.println(" [7] - Linha de produção (máquinas e partes)");
         System.out.println(" [8] - Salvar estado da planta");
         System.out.println(" [9] - Carregar estado da planta");
+        System.out.println(" [10] - Reiniciar planta (volta ao estado inicial)");
         System.out.println();
         System.out.println(" [0] - SAIR");
         linhaFina();
@@ -529,7 +545,8 @@ public class MenuConsole {
     }
 
     private void exibirTelaEstoque() {
-        // O estoque pertence a planta atual, que pode ter acabado de ser carregada de arquivo
+        // O estoque pertence a planta atual, que pode ter acabado de ser carregada de
+        // arquivo
         MateriaPrima materiaPrima = gerenciador.getMateriaPrima();
 
         cabecalho("ESTOQUE DE MATÉRIA-PRIMA");
@@ -770,8 +787,10 @@ public class MenuConsole {
     // ======================================================
 
     /**
-     * Executa o programa: recupera o estado salvo da planta (ou, na primeira execução,
-     * pede o cenário e monta uma planta nova) e mantém o menu principal até o usuário
+     * Executa o programa: recupera o estado salvo da planta (ou, na primeira
+     * execução,
+     * pede o cenário e monta uma planta nova) e mantém o menu principal até o
+     * usuário
      * escolher sair ou a entrada do teclado ser encerrada.
      */
     public void iniciar() {
@@ -838,6 +857,9 @@ public class MenuConsole {
             case "9":
                 carregarEstado();
                 break;
+            case "10":
+                reiniciarPlanta();
+                break;
             default:
                 erro("Opção inválida. Escolha um número do menu");
         }
@@ -847,7 +869,8 @@ public class MenuConsole {
     // Persistência: salvar e carregar o estado da planta
     // ======================================================
 
-    // Devolve true se o estado foi gravado. A falha e mostrada ao usuario, e como a gravacao
+    // Devolve true se o estado foi gravado. A falha e mostrada ao usuario, e como a
+    // gravacao
     // e atomica o arquivo salvo antes continua intacto
     private boolean salvarEstado() {
         cabecalho("SALVAR ESTADO DA PLANTA");
@@ -864,8 +887,10 @@ public class MenuConsole {
         return true;
     }
 
-    // Carregar substitui o estado atual. O arquivo e lido e validado por inteiro antes de a
-    // planta ser trocada: se algo falhar, a variavel "gerenciador" nem chega a ser tocada
+    // Carregar substitui o estado atual. O arquivo e lido e validado por inteiro
+    // antes de a
+    // planta ser trocada: se algo falhar, a variavel "gerenciador" nem chega a ser
+    // tocada
     private void carregarEstado() {
         cabecalho("CARREGAR ESTADO DA PLANTA");
 
@@ -892,6 +917,23 @@ public class MenuConsole {
 
         gerenciador = carregada;
         ok("Estado da planta carregado com sucesso");
+    }
+
+    // Volta a planta ao estagio inicial, como se o programa tivesse iniciado do zero
+    // escolhe o cenario de novo e monta a planta padrao. So mexe na memoria: o arquivo
+    // salvo continua como estava ate o usuario salvar de novo
+    private void reiniciarPlanta() {
+        cabecalho("REINICIAR PLANTA");
+        info("A planta volta ao estado inicial: estoque, budget, máquinas, demandas e armazém");
+        info("O que não foi salvo será perdido");
+        info("O arquivo salvo em " + persistencia.getCaminho() + " não é alterado");
+        if (!confirmar("Deseja reiniciar a planta?")) {
+            info("Reinício cancelado. A planta continua como estava");
+            return;
+        }
+
+        montarPlanta(escolherCenario());
+        ok("Planta reiniciada. Use a opção de salvar para substituir o arquivo salvo");
     }
 
     // Pergunta sim/nao ate receber uma resposta valida
@@ -925,8 +967,10 @@ public class MenuConsole {
     // Partida: estado salvo ou planta nova
     // ======================================================
 
-    // Define a planta de partida: o estado salvo, se houver; senao, uma planta nova com os
-    // dados padrao. Devolve false se o usuario preferiu sair para corrigir o arquivo
+    // Define a planta de partida: o estado salvo, se houver; senao, uma planta nova
+    // com os
+    // dados padrao. Devolve false se o usuario preferiu sair para corrigir o
+    // arquivo
     private boolean iniciarPlanta() {
         try {
             gerenciador = persistencia.carregar(catalogo);
@@ -949,8 +993,10 @@ public class MenuConsole {
         return true;
     }
 
-    // O arquivo com problema nunca e apagado nem sobrescrito sem o usuario salvar de
-    // proposito: ele pode estar so incompativel, e o usuario pode querer conserta-lo
+    // O arquivo com problema nunca e apagado nem sobrescrito sem o usuario salvar
+    // de
+    // proposito: ele pode estar so incompativel, e o usuario pode querer
+    // conserta-lo
     private boolean iniciarPlantaNovaAposFalha() {
         cabecalho("ARQUIVO DE ESTADO COM PROBLEMA");
         System.out.println(" [1] - Iniciar uma planta nova");

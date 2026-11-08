@@ -4,7 +4,6 @@ import br.unicamp.ic.mc322.exception.ArquivoCorrompidoException;
 import br.unicamp.ic.mc322.exception.DadosInvalidosException;
 import br.unicamp.ic.mc322.exception.DemandaInvalidaException;
 import br.unicamp.ic.mc322.model.Cenario;
-import br.unicamp.ic.mc322.model.Demanda;
 import br.unicamp.ic.mc322.model.EstadoMaquina;
 import br.unicamp.ic.mc322.model.Maquina;
 import br.unicamp.ic.mc322.model.MateriaPrima;
